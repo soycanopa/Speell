@@ -53,9 +53,7 @@ final class WorkspaceSplitViewController: NSSplitViewController {
     /// pinta el fondo de la ventana encima y no intercepta el mouse
     /// (`hitTest` nulo), así el arrastre del divider pasa directo al divisor.
     private lazy var dividerCover: NSView = {
-        let cover = PassthroughView()
-        cover.wantsLayer = true
-        cover.layer?.backgroundColor = SpeellPalette.windowBackground.cgColor
+        let cover = DividerHandleView()
         splitView.addSubview(cover)
         return cover
     }()
@@ -68,8 +66,61 @@ final class WorkspaceSplitViewController: NSSplitViewController {
     }
 }
 
-/// Pinta su color pero deja pasar los eventos a las vistas de abajo.
-private final class PassthroughView: NSView {
+/// La franja del divisor: pinta el fondo de la ventana encima del punto
+/// agarradero que el sistema dibuja en el centro, y al hacer hover muestra un
+/// handle en forma de pill vertical. No intercepta el mouse (`hitTest` nulo):
+/// el arrastre del divider pasa directo al divisor de abajo.
+private final class DividerHandleView: NSView {
+    private let pill = CALayer()
+    private var hovering = false {
+        didSet { fadePill() }
+    }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.backgroundColor = SpeellPalette.windowBackground.cgColor
+        pill.cornerRadius = 2
+        pill.backgroundColor = NSColor.white.withAlphaComponent(0.28).cgColor
+        pill.opacity = 0
+        layer?.addSublayer(pill)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("DividerHandleView no se crea desde un coder")
+    }
+
+    override func layout() {
+        super.layout()
+        // Pill vertical centrada en la franja; con el arrastre la vista se
+        // mueve y la pill viaja con ella.
+        pill.frame = CGRect(
+            x: (bounds.width - 4) / 2,
+            y: (bounds.height - 36) / 2,
+            width: 4,
+            height: 36)
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach { removeTrackingArea($0) }
+        addTrackingArea(NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeAlways],
+            owner: self,
+            userInfo: nil))
+    }
+
+    override func mouseEntered(with event: NSEvent) { hovering = true }
+    override func mouseExited(with event: NSEvent) { hovering = false }
+
+    private func fadePill() {
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.15)
+        pill.opacity = hovering ? 1 : 0
+        CATransaction.commit()
+    }
+
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 }
 
