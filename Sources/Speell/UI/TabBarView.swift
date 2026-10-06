@@ -42,9 +42,9 @@ struct TabItem: View {
         // pegado arriba del todo. Las inactivas son solo texto sobre la franja.
         .background(alignment: .top) {
             if active {
-                SpeellPalette.attachedTab
-                    .fill(SpeellPalette.surfaceBackground)
+                SpeellPalette.surfaceBackground
                     .frame(height: AppBarView.height - 2)
+                    .clipShape(SpeellPalette.attachedTab)
             }
         }
         .contentShape(Rectangle())

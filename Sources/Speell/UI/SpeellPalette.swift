@@ -29,15 +29,18 @@ enum SpeellPalette {
     /// `TerminalPalette.backgroundHex`.
     static var surfaceBackground: Color { color(fromHex: TerminalPalette.backgroundHex) }
 
-    /// `#RRGGBB` a `Color`. Nada de opacidad ni formatos cortos: los hex del
-    /// producto son siempre de 6.
+    /// `#RRGGBB` a `Color`, por `NSColor(srgbRed:)` como `windowBackground`.
+    /// El parseo es a mano, sin `Scanner`: con el `#` delante,
+    /// `scanHexInt64` no lee nada y el color sale negro. Nada de opacidad ni
+    /// formatos cortos: los hex del producto son siempre de 6.
     private static func color(fromHex hex: String) -> Color {
-        var value: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&value)
-        return Color(
-            red: Double((value >> 16) & 0xFF) / 255,
-            green: Double((value >> 8) & 0xFF) / 255,
-            blue: Double(value & 0xFF) / 255)
+        let digits = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
+        let value = UInt64(digits, radix: 16) ?? 0
+        return Color(nsColor: NSColor(
+            srgbRed: CGFloat((value >> 16) & 0xFF) / 255,
+            green: CGFloat((value >> 8) & 0xFF) / 255,
+            blue: CGFloat(value & 0xFF) / 255,
+            alpha: 1))
     }
 
     /// Margen que la ventana deja entre su borde y el contenido: app bar,
