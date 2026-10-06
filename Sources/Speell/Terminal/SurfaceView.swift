@@ -15,6 +15,9 @@ final class SurfaceView: NSView, NSTextInputClient {
     private var keyTextAccumulator: [String]?
     private var markedText = NSMutableAttributedString()
 
+    /// Observador de `NSWindowDidChangeOcclusionStateNotification` de la ventana.
+    private var occlusionObserver: NSObjectProtocol?
+
     init(host: GhosttyHost, command: Command) {
         self.host = host
         super.init(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
@@ -59,6 +62,9 @@ final class SurfaceView: NSView, NSTextInputClient {
         if let surface {
             ghostty_surface_free(surface)
         }
+        if let occlusionObserver {
+            NotificationCenter.default.removeObserver(occlusionObserver)
+        }
     }
 
     // MARK: Foco
@@ -85,6 +91,26 @@ final class SurfaceView: NSView, NSTextInputClient {
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+
+        // Sin reenviar el cambio de oclusión de la ventana, el renderer queda
+        // pausado para siempre: si otra ventana tapa a Speell, `occlusionState`
+        // pierde `.visible` y cualquier `updateOcclusion` manda
+        // `set_occlusion(true)`; al destapar, esta notificación es lo que
+        // actualiza el estado. El pin solo procesa cambios de visibilidad
+        // (`occlusionCallback` hace early-return si el valor no cambia).
+        if let observer = occlusionObserver {
+            NotificationCenter.default.removeObserver(observer)
+            occlusionObserver = nil
+        }
+        if let window {
+            occlusionObserver = NotificationCenter.default.addObserver(
+                forName: NSWindow.didChangeOcclusionStateNotification,
+                object: window,
+                queue: .main) { [weak self] _ in
+                    self?.updateOcclusion()
+            }
+        }
+
         guard let surface else { return }
 
         if let screen = window?.screen {
