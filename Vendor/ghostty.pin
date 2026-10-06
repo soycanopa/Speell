@@ -1,0 +1,11 @@
+# Pin del motor de terminal. Actualizarlo es un cambio propio: docs/TRD.md ("Qué es de libghostty").
+# El xcframework se genera con Scripts/build-libghostty.sh y no se commitea por peso.
+#
+# Por qué un commit de main y no el tag v1.3.1: ver docs/decisions/0001-pin-libghostty.md.
+# zig 0.15.2 (el mínimo del tag v1.3.1) no enlaza en el SDK de macOS 27 de esta máquina.
+ghostty_version=1.3.2-dev
+ghostty_ref=main
+ghostty_commit=c3203ea4b169a18eb2ccfe92847e426d8afea858
+zig_version=0.16.0
+zig_sha256_aarch64_macos=b23d70deaa879b5c2d486ed3316f7eaa53e84acf6fc9cc747de152450d401489
+zig_sha256_x86_64_macos=0387557ed1877bc6a2e1802c8391953baddba76081876301c522f52977b52ba7
