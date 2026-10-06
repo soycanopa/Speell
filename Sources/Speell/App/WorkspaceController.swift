@@ -120,6 +120,7 @@ final class WorkspaceController {
         model.noticeSources = adapters.mapValues(\.noticeSource)
         model.terminalBackgroundHex = TerminalPalette.backgroundHex(
             in: TerminalPalette.applicationSupportDirectory)
+        model.agyNoticesEnabled = AgyNoticeSettings.isEnabled()
     }
 
     private func wireIntents() {
@@ -145,6 +146,16 @@ final class WorkspaceController {
             guard let self else { return }
             self.settingsStore.save(preferences, named: Self.notificationPreferencesFile)
             self.model.notificationPreferences = preferences
+        }
+        model.onEnableAgyNotices = { [weak self] in
+            guard let self else { return }
+            do {
+                try AgyNoticeSettings.enable()
+                self.model.agyNoticesEnabled = true
+            } catch {
+                FileHandle.standardError.write(
+                    Data("settings de agy: \(error)\n".utf8))
+            }
         }
         model.onCheckForUpdates = { [weak self] in self?.checkForUpdates() }
         model.onUpdateAgent = { [weak self] agent in self?.updateAgent(agent) }

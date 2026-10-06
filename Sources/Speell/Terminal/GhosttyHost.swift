@@ -30,6 +30,13 @@ final class GhosttyHost {
             dispatch(target, .commandFinished(exitCode: Int(action.action.command_finished.exit_code)))
             return true
 
+        case GHOSTTY_ACTION_RING_BELL:
+            // BEL del programa corriendo en la surface. El router decide
+            // después si es aviso: en una tab de agente sí (Agy con su
+            // setting `notifications`), en una shell no (docs/decisions/0006).
+            dispatch(target, .bell)
+            return true
+
         default:
             return false
         }

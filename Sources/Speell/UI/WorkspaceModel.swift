@@ -74,6 +74,10 @@ final class WorkspaceModel: ObservableObject {
     /// El canal de avisos real de cada agente, declarado por su adaptador
     /// (docs/decisions/0006). La configuración lo muestra tal cual.
     @Published var noticeSources: [AgentKind: NoticeSource] = [:]
+    /// La campana de Agy depende de una clave documentada en el
+    /// `settings.json` del propio CLI; aquí vive su estado real, leído al
+    /// arrancar. La escritura es siempre una acción del usuario.
+    @Published var agyNoticesEnabled = false
     /// No nulo = modal de sesiones abierto para ese agente.
     @Published var sessionPicker: SessionPickerRequest?
     @Published var agentSessions: [SessionRef] = []
@@ -122,6 +126,9 @@ final class WorkspaceModel: ObservableObject {
     var onAgentToggle: (AgentKind, Bool) -> Void = { _, _ in }
     /// Cambio de preferencias de notificaciones.
     var onNotificationPreferencesChange: (NotificationPreferences) -> Void = { _ in }
+    /// Activar la campana de Agy: escribe la clave documentada en el
+    /// `settings.json` del CLI (docs/decisions/0006).
+    var onEnableAgyNotices: () -> Void = {}
     /// Buscar actualizaciones de todos los CLIs capaces.
     var onCheckForUpdates: () -> Void = {}
     /// Instalar la actualización de un agente.

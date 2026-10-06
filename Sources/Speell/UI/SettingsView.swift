@@ -228,6 +228,7 @@ private struct AgentsSection: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 12)
+            noticeEnableButton(kind)
             updateButton(kind)
             Toggle("", isOn: binding(kind))
                 .toggleStyle(.switch)
@@ -292,13 +293,43 @@ private struct AgentsSection: View {
     }
 
     /// El canal de avisos que el CLI ofrece de verdad, declarado por su
-    /// adaptador (docs/decisions/0006): nada promete lo que no hay.
+    /// adaptador (docs/decisions/0006): nada promete lo que no hay. Para la
+    /// campana de Agy, el estado es el de la clave documentada del propio
+    /// CLI, no una preferencia de Speell.
     private func noticeLabel(_ kind: AgentKind) -> String {
         guard let source = model.noticeSources[kind] else { return "" }
         switch source {
         case .osc: return "Avisos: notificación OSC 9/777 del CLI"
-        case .bell: return "Avisos: campana del terminal (requiere activarla)"
+        case .bell:
+            return model.agyNoticesEnabled
+                ? "Avisos: campana del terminal"
+                : "Avisos: campana del terminal (sin activar)"
         case .none: return "Avisos: el CLI no ofrece canal"
+        }
+    }
+
+    /// La activación de la campana de Agy: escribe la clave `notifications`
+    /// en el `settings.json` del CLI. Es un acto del usuario sobre la config
+    /// de otro producto, así que vive en un botón explícito y nunca corre
+    /// por su cuenta (docs/decisions/0006).
+    @ViewBuilder
+    private func noticeEnableButton(_ kind: AgentKind) -> some View {
+        if kind == .agy, model.noticeSources[kind] == .bell, !model.agyNoticesEnabled {
+            Button {
+                model.onEnableAgyNotices()
+            } label: {
+                Text("Activar avisos")
+                    .font(.system(size: 11, weight: .medium))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color.accentColor.opacity(0.22))
+                    }
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Escribe notifications: true en ~/.gemini/antigravity-cli/settings.json")
         }
     }
 
