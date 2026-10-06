@@ -15,7 +15,7 @@ final class SurfaceView: NSView, NSTextInputClient {
     private var keyTextAccumulator: [String]?
     private var markedText = NSMutableAttributedString()
 
-    init(host: GhosttyHost, cwd: String) {
+    init(host: GhosttyHost, command: Command) {
         self.host = host
         super.init(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
 
@@ -29,12 +29,17 @@ final class SurfaceView: NSView, NSTextInputClient {
         config.scale_factor = Double(NSScreen.main?.backingScaleFactor ?? 2)
         config.context = GHOSTTY_SURFACE_CONTEXT_WINDOW
 
-        // Shell de login en el cwd de la tab. Sin comando explícito, libghostty
-        // usa el shell por defecto de la config.
-        surface = cwd.withCString { cCwd in
+        surface = command.cwd.withCString { cCwd in
             config.working_directory = cCwd
-            config.command = nil
-            return ghostty_surface_new(app, &config)
+            guard let line = command.shellLine else {
+                // Tab shell: el shell de login por defecto de la config.
+                config.command = nil
+                return ghostty_surface_new(app, &config)
+            }
+            return line.withCString { cLine in
+                config.command = cLine
+                return ghostty_surface_new(app, &config)
+            }
         }
 
         if surface == nil {
