@@ -127,7 +127,8 @@ struct SidebarView: View {
         } label: {
             SidebarRow(
                 project: project,
-                missing: model.missingProjectIds.contains(project.id))
+                missing: model.missingProjectIds.contains(project.id),
+                hasNotice: model.noticedProjectIds.contains(project.id))
                 .rowChrome(active: active)
         }
         .buttonStyle(.plain)

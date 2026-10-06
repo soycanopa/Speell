@@ -97,8 +97,18 @@ final class WorkspaceController {
         guard route.marksTab else { return }
 
         model.noticedTabIds.insert(tabId)
+        refreshNoticedProjects()
         guard route.postsSystemNotification else { return }
         _ = noticeCenter.post(notice, tabId: tabId, tabTitle: tab.title)
+    }
+
+    /// Proyectos con al menos una tab con aviso pendiente. La sidebar no
+    /// conoce tabs: solo este conjunto (FLOW F4 paso 2).
+    func refreshNoticedProjects() {
+        model.noticedProjectIds = Set(
+            sessions.tabs
+                .filter { model.noticedTabIds.contains($0.id) }
+                .map(\.projectId))
     }
 
     init(host: GhosttyHost, pane: TerminalPane) {
@@ -225,5 +235,6 @@ final class WorkspaceController {
         if let current = model.activeTabId, !model.tabs.contains(where: { $0.id == current }) {
             model.activeTabId = nil
         }
+        refreshNoticedProjects()
     }
 }

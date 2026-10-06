@@ -90,6 +90,10 @@ final class WorkspaceModel: ObservableObject {
     /// Tabs con aviso pendiente de mirar (el agente mandó algo o terminó).
     /// El punto de la tab vive aquí; se limpia al seleccionar la tab.
     @Published var noticedTabIds: Set<UUID> = []
+    /// Proyectos con al menos una tab con aviso pendiente (FLOW F4 paso 2:
+    /// "la sidebar marca el proyecto"). Derivado de `noticedTabIds`; no es
+    /// fuente de verdad de nada.
+    @Published var noticedProjectIds: Set<UUID> = []
 
     /// Preferencias de notificaciones persistidas (settings → Notificaciones).
     @Published var notificationPreferences = NotificationPreferences()
