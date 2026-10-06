@@ -5,15 +5,32 @@ import Foundation
 extension WorkspaceController {
     func ensureSurfaces(projectId: UUID) {
         for tab in sessions.tabs(of: projectId) where pane.surfaceView(forTab: tab.id) == nil {
-            // Restaurar una tab de agente nueva sin puntero ya no puede
-            // recrear su hilo: el proceso murió con la app. Lo que queda es el
-            // último de la carpeta, y la etiqueta de la tab lo dice (FLOW F3).
-            var restored = tab
-            if restored.kind == .agent, restored.resumeQuality == .fresh {
-                restored.resumeQuality = .latestInDir
-                sessions.update(restored)
+            guard tab.kind == .agent, tab.resumeQuality == .fresh,
+                  let agent = tab.agent, let adapter = adapters[agent] else {
+                installSurface(for: tab)
+                continue
             }
-            installSurface(for: restored)
+
+            // Restaurar una tab de agente sin puntero: "último de la carpeta"
+            // solo existe si el CLI tiene sesiones aquí. Con la carpeta vacía,
+            // `continueLatest` es un error garantizado (grok: "No session
+            // found for current directory") y la tab muere. El listado del
+            // propio adaptador decide: con sesiones, retoma el último; sin
+            // ellas, conversación nueva. Es async: el listado puede tardar.
+            let cwd = resolvedCwd(for: tab)
+            Task { @MainActor [weak self] in
+                guard let self, self.sessions.tabs.contains(where: { $0.id == tab.id }) else { return }
+                var restored = tab
+                if !(await adapter.list(cwd: cwd)).isEmpty {
+                    restored.resumeQuality = .latestInDir
+                    self.sessions.update(restored)
+                }
+                guard self.pane.surfaceView(forTab: tab.id) == nil else { return }
+                self.installSurface(for: restored)
+                if self.model.activeTabId == tab.id {
+                    self.focusActiveSurface()
+                }
+            }
         }
     }
 

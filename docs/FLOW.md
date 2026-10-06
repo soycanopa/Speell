@@ -51,7 +51,7 @@ Hecho: el proceso es hijo de esa tab. Cerrar la tab lo mata. El puntero queda.
 2. Se abre el último proyecto y sus tabs.
 3. Tab shell → shell en cwd.
 4. Tab agente con id → `resume(cwd, id)`.
-5. Tab agente sin id → `continueLatest(cwd)`, etiqueta visible de que es el último, no ese hilo.
+5. Tab agente sin id → `continueLatest(cwd)` si el `list` del adaptador tiene sesiones en la carpeta; si no hay, `launch(cwd)` (conversación nueva). La fuente de la decisión es el listado del propio CLI, nunca scrollback (docs/decisions/0005).
 
 Hecho: no se pinta un transcript de Speell. El TUI del agente, o el shell, es lo único en la surface.
 
