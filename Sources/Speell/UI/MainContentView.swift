@@ -32,8 +32,8 @@ struct MainContentView: View {
         // apoyan en ese borde, y una esquina redondeada abriría una cuña de
         // chrome justo donde la tab se une con la terminal — pero solo si la
         // tab activa es la primera. Si es otra, la esquina queda expuesta y
-        // tiene que ir redondeada. En configuración no hay tab: las cuatro
-        // esquinas van redondeadas.
+        // tiene que ir redondeada. Sin tabs (el home) también queda expuesta.
+        // En configuración no hay tab: las cuatro esquinas van redondeadas.
         .clipShape(clipShape)
         .sheet(item: $model.sessionPicker) { request in
             SessionPickerView(model: model, agent: request.agent)
@@ -43,8 +43,12 @@ struct MainContentView: View {
     /// La forma del pane según el modo y la tab activa.
     private var clipShape: UnevenRoundedRectangle {
         if model.appMode == .settings { return SpeellPalette.corner }
-        let firstTabActive = model.tabs.first?.id == model.activeTabId
-        return SpeellPalette.pane(roundTopLeading: !firstTabActive)
+        // Sin tabs todas las esquinas van redondas. El `==` directo no sirve:
+        // con `tabs.first?.id == nil` y `activeTabId == nil` comparaba
+        // `nil == nil`, daba "primera tab activa" y la esquina quedaba recta
+        // justo en el estado en que más se ve.
+        guard let first = model.tabs.first else { return SpeellPalette.corner }
+        return SpeellPalette.pane(roundTopLeading: first.id != model.activeTabId)
     }
 }
 
