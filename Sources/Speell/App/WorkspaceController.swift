@@ -16,6 +16,7 @@ final class WorkspaceController {
     private let adapters: [AgentKind: AgentAdapter] = [
         .grok: GrokAdapter(),
         .opencode2: OpenCode2Adapter(),
+        .agy: AgyAdapter(),
     ]
 
     /// Última tab activa de cada proyecto. Solo en memoria.
