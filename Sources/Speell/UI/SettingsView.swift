@@ -8,11 +8,15 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(model.settingsSection.title)
-                .font(.system(size: 15, weight: .semibold))
-                .padding(.horizontal, 14)
-                .padding(.top, 14)
-                .padding(.bottom, 10)
+            HStack(alignment: .center) {
+                Text(model.settingsSection.title)
+                    .font(.system(size: 15, weight: .semibold))
+                Spacer(minLength: 12)
+                headerTrailing
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
             Divider()
 
             content
@@ -31,6 +35,41 @@ struct SettingsView: View {
         case .agentes: AgentsSection(model: model)
         case .notificaciones: NotificationsSection(model: model)
         }
+    }
+
+    /// El control de la seccion, a la derecha del titulo.
+    @ViewBuilder
+    private var headerTrailing: some View {
+        switch model.settingsSection {
+        case .agentes: checkUpdatesButton
+        default: EmptyView()
+        }
+    }
+
+    /// Buscar actualizaciones: chequea todos los CLIs capaces.
+    private var checkUpdatesButton: some View {
+        Button {
+            model.onCheckForUpdates()
+        } label: {
+            HStack(spacing: 6) {
+                if model.updateWorkInProgress {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+                Text(model.updateWorkInProgress ? "Trabajando…" : "Buscar actualizaciones")
+                    .font(.system(size: 12))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(model.updateWorkInProgress)
+        .help("Chequea los CLIs que exponen chequeo de updates")
     }
 }
 
@@ -161,32 +200,6 @@ private struct AgentsSection: View {
                 }
             }
 
-            Divider()
-
-            HStack {
-                Button {
-                    model.onCheckForUpdates()
-                } label: {
-                    HStack(spacing: 6) {
-                        if model.updateWorkInProgress {
-                            ProgressView()
-                                .controlSize(.small)
-                        }
-                        Text(model.updateWorkInProgress ? "Trabajando…" : "Buscar actualizaciones")
-                            .font(.system(size: 12))
-                    }
-                }
-                .buttonStyle(.plain)
-                .padding(10)
-                .background {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(Color.white.opacity(0.06))
-                }
-                .contentShape(Rectangle())
-                .disabled(model.updateWorkInProgress)
-                Spacer()
-            }
-            .padding(10)
         }
         .onAppear {
             resolvePaths()
