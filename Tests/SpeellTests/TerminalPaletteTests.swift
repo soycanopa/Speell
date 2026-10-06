@@ -64,4 +64,29 @@ final class TerminalPaletteTests: XCTestCase {
     func testIntegrationWithTheEngineNeedsTheRunningApp() {
         XCTAssertEqual(TerminalPalette.overrideFileName, "ghostty.conf")
     }
+
+    /// El override carga varias claves y se lee como diccionario; escribir el
+    /// fondo conserva las demás.
+    func testValuesRoundtripAndHexWriteKeepsOtherKeys() throws {
+        _ = TerminalPalette.writeOverride(
+            values: ["background": "#161616", "font-family": "Menlo", "font-size": "14"],
+            in: directory)
+
+        XCTAssertEqual(TerminalPalette.backgroundHex(in: directory), "#161616")
+        XCTAssertEqual(TerminalPalette.fontFamily(in: directory), "Menlo")
+        XCTAssertEqual(TerminalPalette.fontSize(in: directory), 14)
+
+        _ = TerminalPalette.writeOverride(hex: "#0A0B0C", in: directory)
+
+        XCTAssertEqual(TerminalPalette.backgroundHex(in: directory), "#0A0B0C")
+        XCTAssertEqual(TerminalPalette.fontFamily(in: directory), "Menlo")
+        XCTAssertEqual(TerminalPalette.fontSize(in: directory), 14)
+    }
+
+    /// Sin override, la tipografía es la bundled del CLI y el tamaño, el
+    /// default del pin para macOS (13).
+    func testFontDefaultsComeFromThePin() {
+        XCTAssertNil(TerminalPalette.fontFamily(in: directory))
+        XCTAssertEqual(TerminalPalette.fontSize(in: directory), 13)
+    }
 }

@@ -9,8 +9,10 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(model.settingsSection.title)
-                .font(.system(size: 13, weight: .semibold))
-                .padding(12)
+                .font(.system(size: 15, weight: .semibold))
+                .padding(.horizontal, 14)
+                .padding(.top, 14)
+                .padding(.bottom, 10)
             Divider()
 
             content
@@ -31,37 +33,124 @@ struct SettingsView: View {
     }
 }
 
-/// Apariencia: el fondo de la terminal. Se persiste en el override de
-/// libghostty y se aplica en vivo a las surfaces abiertas.
+/// Apariencia: fondo, tipografía y tamaño de la terminal. Se persiste en el
+/// override de libghostty y se aplica en vivo a las surfaces abiertas.
 private struct AppearanceSection: View {
     @ObservedObject var model: WorkspaceModel
 
     @State private var color: Color
+    @State private var fontFamily: String?
+    @State private var fontSize: Double
 
     init(model: WorkspaceModel) {
         self.model = model
-        let hex = TerminalPalette.backgroundHex(in: TerminalPalette.applicationSupportDirectory)
-        _color = State(initialValue: SpeellPalette.color(fromHex: hex))
+        let directory = TerminalPalette.applicationSupportDirectory
+        _color = State(initialValue: SpeellPalette.color(
+            fromHex: TerminalPalette.backgroundHex(in: directory)))
+        _fontFamily = State(initialValue: TerminalPalette.fontFamily(in: directory))
+        _fontSize = State(initialValue: TerminalPalette.fontSize(in: directory))
+    }
+
+    /// Tipografías monoespaciadas conocidas, filtradas por las instaladas.
+    /// La terminal no pide cualquier fuente: pide mono.
+    private static let monoFonts = [
+        "JetBrains Mono", "Fira Code", "Hack", "SF Mono", "Menlo", "Monaco",
+        "Source Code Pro", "Inconsolata", "IBM Plex Mono", "Cascadia Code",
+        "Andale Mono", "Courier New",
+    ]
+
+    /// Las instaladas de la lista curada, alfabéticas.
+    private var availableFonts: [String] {
+        let installed = Set(NSFontManager.shared.availableFonts)
+        return Self.monoFonts.filter { installed.contains($0) }.sorted()
     }
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Fondo de la terminal")
-                    .font(.system(size: 13))
-                Text("Se aplica en vivo a las tabs abiertas y a las nuevas.")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            ColorPicker("", selection: $color, supportsOpacity: false)
-                .labelsHidden()
-                .onChange(of: color) { newColor in
-                    model.onBackgroundChange(SpeellPalette.hex(from: NSColor(newColor)))
+        VStack(alignment: .leading, spacing: 0) {
+            row {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Fondo de la terminal")
+                        .font(.system(size: 13))
+                    Text("Se aplica en vivo a las tabs abiertas y a las nuevas.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
                 }
+            } control: {
+                ColorPicker("", selection: $color, supportsOpacity: false)
+                    .labelsHidden()
+                    .onChange(of: color) { newColor in
+                        emit()
+                    }
+            }
+
+            Divider().padding(.leading, 14)
+
+            row {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Tipografía")
+                        .font(.system(size: 13))
+                    Text("Solo monoespaciadas instaladas. Sin elegir, la que trae ghostty.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            } control: {
+                Picker("", selection: $fontFamily) {
+                    Text("Por defecto").tag(String?.none)
+                    ForEach(availableFonts, id: \.self) { font in
+                        Text(font).tag(String?.some(font))
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 190)
+                .onChange(of: fontFamily) { _ in
+                    emit()
+                }
+            }
+
+            Divider().padding(.leading, 14)
+
+            row {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Tamaño")
+                        .font(.system(size: 13))
+                    Text("El default del pin es 13 en macOS.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            } control: {
+                Stepper(value: $fontSize, in: 7...28, step: 1) {
+                    Text("\(Int(fontSize)) pt")
+                        .font(.system(size: 13))
+                        .monospacedDigit()
+                        .frame(minWidth: 46, alignment: .trailing)
+                }
+                .fixedSize()
+                .onChange(of: fontSize) { _ in
+                    emit()
+                }
+            }
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Cambia el aire de una fila: las opciones respiran.
+    private func row<Label: View, Control: View>(
+        @ViewBuilder label: () -> Label,
+        @ViewBuilder control: () -> Control
+    ) -> some View {
+        HStack {
+            label()
+            Spacer(minLength: 24)
+            control()
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+    }
+
+    private func emit() {
+        model.onAppearanceChange(
+            SpeellPalette.hex(from: NSColor(color)),
+            fontFamily,
+            fontSize)
     }
 }
 
@@ -100,7 +189,8 @@ private struct AgentsSection: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
         }
-        .padding(12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
     }
 
     private func load() {

@@ -37,7 +37,7 @@ struct SidebarView: View {
                             }
                         }
                     }
-                    .padding(.top, 6)
+                    .padding(.top, 8)
                     .frame(width: geo.size.width, alignment: .leading)
                 }
             }
@@ -138,22 +138,23 @@ struct SidebarView: View {
         }
     }
 
-    /// Una fila de sección de configuración, con el mismo realce de selección.
+    /// Una fila de sección de configuración, con el mismo realce de selección
+    /// y un poco más de aire que las filas de proyecto: que respiren.
     private func sectionRow(_ section: SettingsSection) -> some View {
         let active = section == model.settingsSection
         return Button {
             model.settingsSection = section
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 Image(systemName: section.systemImage)
-                    .font(.system(size: 11))
+                    .font(.system(size: 12))
                     .frame(width: 16)
                     .foregroundStyle(.secondary)
                 Text(section.title)
                     .font(.system(size: 13))
                     .lineLimit(1)
             }
-            .rowChrome(active: active)
+            .rowChrome(active: active, verticalPadding: 8)
         }
         .buttonStyle(.plain)
     }
@@ -161,10 +162,10 @@ struct SidebarView: View {
 
 /// Realce y aire de fila de la sidebar, compartido por proyectos y secciones.
 private extension View {
-    func rowChrome(active: Bool) -> some View {
+    func rowChrome(active: Bool, verticalPadding: CGFloat = 5) -> some View {
         self
             .padding(.horizontal, 6)
-            .padding(.vertical, 5)
+            .padding(.vertical, verticalPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
                 if active {

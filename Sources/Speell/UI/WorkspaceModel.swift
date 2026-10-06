@@ -92,8 +92,9 @@ final class WorkspaceModel: ObservableObject {
     var onCancelSessionPicker: () -> Void = {}
     var onSelectTab: (UUID) -> Void = { _ in }
     var onCloseTab: (UUID) -> Void = { _ in }
-    /// Cambio de fondo desde la configuración: hex `#RRGGBB`.
-    var onBackgroundChange: (String) -> Void = { _ in }
+    /// Cambio de apariencia de la terminal desde la configuración:
+    /// fondo `#RRGGBB`, tipografía (`nil` = la bundled del CLI) y tamaño.
+    var onAppearanceChange: (String, String?, Double) -> Void = { _, _, _ in }
 
     var activeProject: Project? {
         projects.first { $0.id == activeProjectId }

@@ -43,9 +43,18 @@ final class WorkspaceController {
         model.onCancelSessionPicker = { [weak self] in self?.cancelSessionPicker() }
         model.onSelectTab = { [weak self] id in self?.selectTab(id: id) }
         model.onCloseTab = { [weak self] id in self?.closeTab(id: id) }
-        model.onBackgroundChange = { [weak self] hex in
+        model.onAppearanceChange = { [weak self] hex, fontFamily, fontSize in
             guard let self else { return }
-            TerminalPalette.writeOverride(hex: hex, in: TerminalPalette.applicationSupportDirectory)
+            let directory = TerminalPalette.applicationSupportDirectory
+            var values = TerminalPalette.values(in: directory)
+            values["background"] = hex
+            if let fontFamily {
+                values["font-family"] = fontFamily
+            } else {
+                values.removeValue(forKey: "font-family")
+            }
+            values["font-size"] = String(format: "%.0f", fontSize)
+            TerminalPalette.writeOverride(values: values, in: directory)
             self.model.terminalBackgroundHex = hex
             self.host.refreshConfig(on: self.pane.allSurfaces())
         }
