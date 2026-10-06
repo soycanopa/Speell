@@ -222,6 +222,10 @@ private struct AgentsSection: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                Text(noticeLabel(kind))
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
             Spacer(minLength: 12)
             updateButton(kind)
@@ -284,6 +288,17 @@ private struct AgentsSection: View {
         case .some(.some(let path)): return path
         case .some(.none): return "no está en el PATH"
         case .none: return "buscando…"
+        }
+    }
+
+    /// El canal de avisos que el CLI ofrece de verdad, declarado por su
+    /// adaptador (docs/decisions/0006): nada promete lo que no hay.
+    private func noticeLabel(_ kind: AgentKind) -> String {
+        guard let source = model.noticeSources[kind] else { return "" }
+        switch source {
+        case .osc: return "Avisos: notificación OSC 9/777 del CLI"
+        case .bell: return "Avisos: campana del terminal (requiere activarla)"
+        case .none: return "Avisos: el CLI no ofrece canal"
         }
     }
 

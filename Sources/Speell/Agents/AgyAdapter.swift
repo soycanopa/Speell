@@ -18,6 +18,13 @@ struct AgyAdapter: AgentAdapter {
 
     var kind: AgentKind { .agy }
 
+    /// Campana del terminal: los docs de Antigravity documentan la clave
+    /// `notifications` de `~/.gemini/antigravity-cli/settings.json` — "system
+    /// desktop notification and a terminal bell chime when a long-running
+    /// task completes or requires your attention". Default `false`: la
+    /// activación es una acción del usuario desde la configuración.
+    var noticeSource: NoticeSource { .bell }
+
     func list(cwd: String) async -> [SessionRef] { [] }
 
     func launch(cwd: String) -> Command {

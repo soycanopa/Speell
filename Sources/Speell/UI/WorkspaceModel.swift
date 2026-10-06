@@ -71,6 +71,9 @@ final class WorkspaceModel: ObservableObject {
 
     /// Agentes que ya tienen adaptador. El menú del `+` muestra estos.
     @Published var availableAgents: [AgentKind] = []
+    /// El canal de avisos real de cada agente, declarado por su adaptador
+    /// (docs/decisions/0006). La configuración lo muestra tal cual.
+    @Published var noticeSources: [AgentKind: NoticeSource] = [:]
     /// No nulo = modal de sesiones abierto para ese agente.
     @Published var sessionPicker: SessionPickerRequest?
     @Published var agentSessions: [SessionRef] = []

@@ -5,6 +5,10 @@ import Foundation
 protocol AgentAdapter {
     var kind: AgentKind { get }
 
+    /// El canal de avisos real de este CLI, verificado contra su fuente
+    /// primaria (docs/decisions/0006). La UI lo declara; nada lo inventa.
+    var noticeSource: NoticeSource { get }
+
     /// Hilos que el CLI conoce para esa carpeta. Vacío si no hay lista.
     func list(cwd: String) async -> [SessionRef]
 

@@ -11,6 +11,13 @@ struct OpenCode2Adapter: AgentAdapter {
 
     var kind: AgentKind { .opencode2 }
 
+    /// Sin canal en v1: el CLI no emite OSC ni campana documentadas. Existe
+    /// un canal real vía plugin TS (`permission.hook("evaluate")` +
+    /// `event.subscribe()`, docs `build/plugins`), pero instalar código
+    /// nuestro en la config del usuario es infra propia: queda en backlog.
+    /// Declarado, no escondido (FLOW F5, docs/decisions/0006).
+    var noticeSource: NoticeSource { .none }
+
     /// El listado pasa por el servicio de fondo del CLI. En frío (sin
     /// servicio) tardó ~75 s en arrancar, medido 2026-10-06; en caliente
     /// responde en <0.1 s. 10 s cubre arranques lentos sin colgar el modal;

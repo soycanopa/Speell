@@ -117,6 +117,7 @@ final class WorkspaceController {
         model.availableAgents = AgentKind.allCases.filter {
             adapters[$0] != nil && agentPreferences.isEnabled($0)
         }
+        model.noticeSources = adapters.mapValues(\.noticeSource)
         model.terminalBackgroundHex = TerminalPalette.backgroundHex(
             in: TerminalPalette.applicationSupportDirectory)
     }

@@ -10,6 +10,14 @@ struct GrokAdapter: AgentAdapter {
 
     var kind: AgentKind { .grok }
 
+    /// OSC 9/777: el manual embebido del binario (`~/.grok/docs/user-guide/
+    /// 05-configuration.md`) documenta `[ui.notifications]`, que dispara
+    /// protocolos de notificación del terminal con default `method = "auto"`
+    /// y la matriz Ghostty → OSC 777. El pin inyecta `TERM_PROGRAM=ghostty`
+    /// (termio/Exec.zig), así que grok detecta Ghostty dentro de Speell.
+    /// No hace falta escribir config: los defaults ya emiten.
+    var noticeSource: NoticeSource { .osc }
+
     func list(cwd: String) async -> [SessionRef] {
         let executable = self.executable
         return await withCheckedContinuation { continuation in
