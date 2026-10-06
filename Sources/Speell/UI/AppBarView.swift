@@ -11,10 +11,9 @@ import SwiftUI
 struct AppBarView: View {
     /// Alto de la franja.
     ///
-    /// 36: con 28 la tab quedaba en 24 y se leía apretada para texto de 13.
-    /// La tab activa mide esto menos 4, y la ventana compensa el alto con este
-    /// valor en `AppDelegate`.
-    static let height: CGFloat = 36
+    /// 30: la tab es compacta y el borde de la terminal sube con ella —
+    /// queda a `windowTopPadding + height` del tope de la ventana.
+    static let height: CGFloat = 30
 
     @ObservedObject var model: WorkspaceModel
 

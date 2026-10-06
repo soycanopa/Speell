@@ -75,6 +75,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             frame: NSRect(x: 0, y: 0, width: 1000, height: 640))
         let barHeight = AppBarView.height
         let pad = SpeellPalette.windowPadding
+        let topPad = SpeellPalette.windowTopPadding
 
         // Todo el contenido —app bar, sidebar y terminal— entra dentro del
         // margen. AppKit mide desde abajo, así que el margen va en `y` del app
@@ -82,12 +83,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         split.view.frame = NSRect(
             x: pad, y: pad,
             width: container.bounds.width - pad * 2,
-            height: container.bounds.height - barHeight - pad * 2)
+            height: container.bounds.height - barHeight - topPad - pad)
         split.view.autoresizingMask = [.width, .height]
 
         let appBar = NSHostingView(rootView: AppBarView(model: controller.model))
         appBar.frame = NSRect(
-            x: pad, y: container.bounds.height - barHeight - pad,
+            x: pad, y: container.bounds.height - barHeight - topPad,
             width: container.bounds.width - pad * 2,
             height: barHeight)
         appBar.autoresizingMask = [.width, .minYMargin]
@@ -204,12 +205,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// vista de 28 pt cuyas coordenadas no controla Speell— y el sistema
     /// recorta el glifo en una línea fija a ~27,5 pt del tope, sin importar
     /// dónde esté el frame (medido moviendo el frame en vivo). El círculo
-    /// completo mide ~11 pt; con `+6` sobre el centro del app bar queda en
-    /// [14,5, 25,5]: cierra entero y es lo más bajo que la banda permite.
-    /// Centrarlo de verdad en la franja (centro 26) lo corta: no cabe.
+    /// completo mide ~11 pt: su centro no puede pasar de ~21 sin cortarse.
+    /// La referencia es absoluta —el centro del glifo a ~20,5 del tope—, no
+    /// relativa al alto del app bar, para que los puntos no suban y bajen
+    /// con la franja.
     private func centerWindowControls(in window: NSWindow, on bar: NSView) {
         guard let content = window.contentView else { return }
-        let barCenter = CGPoint(x: 0, y: bar.frame.midY + 6)
+        let barCenter = CGPoint(x: 0, y: bar.frame.midY + 1)
 
         let buttons = [
             window.standardWindowButton(.closeButton),

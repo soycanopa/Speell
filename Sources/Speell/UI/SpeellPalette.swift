@@ -47,6 +47,11 @@ enum SpeellPalette {
     /// sidebar y terminal.
     static let windowPadding: CGFloat = 8
 
+    /// El margen de arriba, menor que el del resto de lados: la tab arranca a
+    /// 6 pt del borde de la ventana, más cerca del tope que el resto del
+    /// contenido del resto de los lados.
+    static let windowTopPadding: CGFloat = 6
+
     /// Radio de las esquinas de la sidebar y de la terminal.
     static let cornerRadius: CGFloat = 8
 

@@ -37,13 +37,14 @@ struct TabItem: View {
         // aire — el fondo de la tab activa baja hasta el borde del app bar.
         .frame(height: AppBarView.height - 4)
         // La tab activa nace de la terminal: mismo tono, esquinas redondeadas
-        // solo arriba y borde inferior en el borde mismo del app bar, donde
-        // empieza la terminal — por eso el fondo mide app bar menos 2 y va
-        // pegado arriba del todo. Las inactivas son solo texto sobre la franja.
+        // solo arriba y el borde inferior en el borde mismo del app bar, donde
+        // empieza la terminal. Cubre la franja entera —de arriba a abajo— así
+        // que su tope queda a `windowTopPadding` del borde de la ventana.
+        // Las inactivas son solo texto sobre la franja.
         .background(alignment: .top) {
             if active {
                 SpeellPalette.surfaceBackground
-                    .frame(height: AppBarView.height - 2)
+                    .frame(height: AppBarView.height)
                     .clipShape(SpeellPalette.attachedTab)
             }
         }
