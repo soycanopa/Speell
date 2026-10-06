@@ -8,11 +8,10 @@ enum AgentTabChoice {
     case session(SessionRef)
 }
 
-/// Página del menú del `+`. Es un desplegable: primero los tipos de tab, y
-/// desde un agente sus opciones, y desde ahí sus hilos.
+/// Página del menú del `+`. En la raíz están la terminal y los agentes con sus
+/// acciones; la segunda página es la lista de hilos de un agente.
 enum TabMenuPage: Equatable {
     case root
-    case agent(AgentKind)
     case sessions(AgentKind)
 }
 
@@ -39,7 +38,6 @@ final class WorkspaceModel: ObservableObject {
     var onRemoveProject: (UUID) -> Void = { _ in }
     var onNewTerminal: () -> Void = {}
     var onNewAgentTab: (AgentKind, AgentTabChoice) -> Void = { _, _ in }
-    var onOpenAgentMenu: (AgentKind) -> Void = { _ in }
     var onLoadAgentSessions: (AgentKind) -> Void = { _ in }
     var onTabMenuBack: () -> Void = {}
     var onResetTabMenu: () -> Void = {}

@@ -33,7 +33,6 @@ final class WorkspaceController {
         model.onRemoveProject = { [weak self] id in self?.removeProject(id: id) }
         model.onNewTerminal = { [weak self] in self?.newShellTab() }
         model.onNewAgentTab = { [weak self] agent, choice in self?.newAgentTab(agent: agent, choice: choice) }
-        model.onOpenAgentMenu = { [weak self] agent in self?.model.menuPage = .agent(agent) }
         model.onLoadAgentSessions = { [weak self] agent in self?.loadAgentSessions(agent: agent) }
         model.onTabMenuBack = { [weak self] in self?.tabMenuBack() }
         model.onResetTabMenu = { [weak self] in self?.resetTabMenu() }
@@ -186,12 +185,8 @@ final class WorkspaceController {
         switch model.menuPage {
         case .root:
             break
-        case .agent:
-            model.menuPage = .root
-        case .sessions(let agent):
-            model.menuPage = .agent(agent)
-            model.agentSessions = []
-            model.loadingSessions = false
+        case .sessions:
+            resetTabMenu()
         }
     }
 
