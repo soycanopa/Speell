@@ -92,11 +92,13 @@ enum SpeellPalette {
 
     /// La forma del pane de la terminal: redondeada abajo en ambas esquinas y
     /// arriba en la derecha, que da contra el chrome. Arriba a la izquierda va
-    /// recta: ahí nace la tab activa, y una esquina redondeada abriría una
-    /// cuña de chrome justo donde la tab se une con la terminal.
-    static var pane: UnevenRoundedRectangle {
+    /// recta solo cuando la tab activa es la primera —ahí nace la tab, y una
+    /// esquina redondeada abriría una cuña de chrome justo donde la tab se une
+    /// con la terminal—; si la tab activa es otra, esa esquina queda expuesta
+    /// y tiene que ir redondeada.
+    static func pane(roundTopLeading: Bool) -> UnevenRoundedRectangle {
         UnevenRoundedRectangle(
-            topLeadingRadius: 0,
+            topLeadingRadius: roundTopLeading ? cornerRadius : 0,
             bottomLeadingRadius: cornerRadius,
             bottomTrailingRadius: cornerRadius,
             topTrailingRadius: cornerRadius,
