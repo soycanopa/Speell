@@ -14,12 +14,6 @@ struct TabItem: View {
                 .font(.system(size: 13))
                 .lineLimit(1)
 
-            if tab.kind == .agent {
-                Text(qualityLabel)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-            }
-
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 9, weight: .bold))
@@ -46,15 +40,6 @@ struct TabItem: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
-    }
-
-    /// La tab dice con qué calidad se retoma el hilo (UX, Lanzar y retomar).
-    private var qualityLabel: String {
-        switch tab.resumeQuality {
-        case .exact: return "exacta"
-        case .latestInDir: return "última"
-        case .fresh: return "nueva"
-        }
     }
 }
 
