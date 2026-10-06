@@ -1,0 +1,7 @@
+.DS_Store
+
+# Ghostty xcframework build (TRD: generado, no commiteado si pesa)
+build/
+*.xcframework
+.zig-cache/
+zig-out/
