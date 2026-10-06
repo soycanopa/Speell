@@ -24,14 +24,17 @@ final class WorkspaceController {
         self.host = host
         self.pane = pane
         wireIntents()
+        model.availableAgents = AgentKind.allCases.filter { adapters[$0] != nil }
     }
 
     private func wireIntents() {
         model.onAddProject = { [weak self] in self?.addProject() }
         model.onSelectProject = { [weak self] id in self?.selectProject(id: id) }
         model.onRemoveProject = { [weak self] id in self?.removeProject(id: id) }
-        model.onNewTab = { [weak self] in self?.newTab() }
         model.onNewTerminal = { [weak self] in self?.newShellTab() }
+        model.onNewAgentTab = { [weak self] agent, choice in self?.newAgentTab(agent: agent, choice: choice) }
+        model.onLoadAgentSessions = { [weak self] agent in self?.loadAgentSessions(agent: agent) }
+        model.onCloseAgentSessions = { [weak self] in self?.closeAgentSessions() }
         model.onSelectTab = { [weak self] id in self?.selectTab(id: id) }
         model.onCloseTab = { [weak self] id in self?.closeTab(id: id) }
     }
@@ -136,20 +139,7 @@ final class WorkspaceController {
 
     // MARK: Tabs
 
-    /// `+` y ⌘T: pregunta terminal o agente.
-    func newTab() {
-        guard let project = model.activeProject else { return }
-        switch TabCreationDialogs.askTabKind() {
-        case .terminal:
-            addShellTab(projectId: project.id)
-        case .agent:
-            Task { @MainActor in await askAgent(project: project) }
-        case nil:
-            break
-        }
-    }
-
-    /// Botón del vacío: una terminal, sin preguntar.
+    /// Botón del vacío y ⌘T: una terminal, sin preguntar.
     func newShellTab() {
         guard let project = model.activeProject else { return }
         addShellTab(projectId: project.id)
@@ -166,15 +156,34 @@ final class WorkspaceController {
         selectTab(id: tabs[number - 1].id)
     }
 
-    private func askAgent(project: Project) async {
-        guard let adapter = adapters[.grok] else { return }
-        // `list` corre fuera del hilo principal: el diálogo aparece cuando hay lista.
-        let sessions = await adapter.list(cwd: project.path)
-        guard let choice = TabCreationDialogs.askAgentSession(
-            agentName: adapter.kind.displayName,
-            sessions: sessions
-        ) else { return }
+    // MARK: Agentes
+
+    private func newAgentTab(agent: AgentKind, choice: AgentTabChoice) {
+        guard let project = model.activeProject, let adapter = adapters[agent] else { return }
         addAgentTab(projectId: project.id, adapter: adapter, choice: choice)
+        closeAgentSessions()
+    }
+
+    /// La lista de hilos se pide al abrir "Elegir hilo…", no en cada `+`.
+    /// Corre fuera del hilo principal; el popover muestra "Buscando hilos…".
+    private func loadAgentSessions(agent: AgentKind) {
+        guard let project = model.activeProject, let adapter = adapters[agent] else { return }
+        model.sessionListAgent = agent
+        model.agentSessions = []
+        model.loadingSessions = true
+
+        let cwd = project.path
+        Task { @MainActor in
+            let sessions = await adapter.list(cwd: cwd)
+            model.agentSessions = sessions
+            model.loadingSessions = false
+        }
+    }
+
+    private func closeAgentSessions() {
+        model.sessionListAgent = nil
+        model.agentSessions = []
+        model.loadingSessions = false
     }
 
     private func addShellTab(projectId: UUID) {
@@ -196,7 +205,7 @@ final class WorkspaceController {
         focusActiveSurface()
     }
 
-    private func addAgentTab(projectId: UUID, adapter: AgentAdapter, choice: TabCreationDialogs.AgentChoice) {
+    private func addAgentTab(projectId: UUID, adapter: AgentAdapter, choice: AgentTabChoice) {
         guard let project = projects.project(id: projectId) else { return }
         let cwd = FileManager.default.fileExists(atPath: project.path)
             ? project.path

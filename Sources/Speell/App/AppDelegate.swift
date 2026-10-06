@@ -86,7 +86,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func newTab(_ sender: Any?) {
-        controller?.newTab()
+        // ⌘T coincide con la etiqueta del menú ("Nueva terminal"). Los agentes
+        // viven en el menú del `+`.
+        controller?.newShellTab()
     }
 
     @objc func closeTab(_ sender: Any?) {
