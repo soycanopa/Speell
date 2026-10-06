@@ -5,3 +5,10 @@ build/
 *.xcframework
 .zig-cache/
 zig-out/
+
+# Vendor: artefactos generados localmente, no commiteados
+Vendor/build/
+Vendor/toolchain/
+
+# SwiftPM
+.build/
