@@ -41,6 +41,8 @@ extension WorkspaceController {
 
     func selectTab(id: UUID) {
         guard sessions.tabs.contains(where: { $0.id == id }) else { return }
+        // Mirar la tab limpia su aviso pendiente (FLOW F4).
+        model.noticedTabIds.remove(id)
         show(tabId: id)
         focusActiveSurface()
     }

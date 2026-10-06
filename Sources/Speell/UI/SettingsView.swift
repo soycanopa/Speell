@@ -29,6 +29,7 @@ struct SettingsView: View {
         switch model.settingsSection {
         case .apariencia: AppearanceSection(model: model)
         case .agentes: AgentsSection(model: model)
+        case .notificaciones: NotificationsSection(model: model)
         }
     }
 }
@@ -231,4 +232,88 @@ private struct AgentDiagnostic: Identifiable {
     let path: String?
 
     var id: String { kind.rawValue }
+}
+
+/// Notificaciones: llave maestra del sistema y los tipos de aviso. El ruido
+/// nativo solo suena si la ventana no está activa (FLOW F4); el punto de la
+/// tab no depende de aquí.
+private struct NotificationsSection: View {
+    @ObservedObject var model: WorkspaceModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            row(
+                title: "Notificaciones del sistema",
+                detail: "Llave maestra: sin ella, nada sale del app.") {
+                Toggle("", isOn: master).labelsHidden().toggleStyle(.switch)
+            }
+
+            Divider().padding(.leading, 14)
+
+            row(
+                title: "Mensajes del agente",
+                detail: "El CLI avisó por su canal (permiso, tarea lista…).") {
+                Toggle("", isOn: kind(.agentMessage)).labelsHidden().toggleStyle(.switch)
+                    .disabled(!model.notificationPreferences.systemEnabled)
+            }
+
+            Divider().padding(.leading, 14)
+
+            row(
+                title: "El comando terminó",
+                detail: "El proceso del agente terminó sin error.") {
+                Toggle("", isOn: kind(.finished)).labelsHidden().toggleStyle(.switch)
+                    .disabled(!model.notificationPreferences.systemEnabled)
+            }
+
+            Divider().padding(.leading, 14)
+
+            row(
+                title: "El comando falló",
+                detail: "El proceso del agente terminó con código de error.") {
+                Toggle("", isOn: kind(.failed)).labelsHidden().toggleStyle(.switch)
+                    .disabled(!model.notificationPreferences.systemEnabled)
+            }
+        }
+    }
+
+    private var master: Binding<Bool> {
+        Binding(
+            get: { model.notificationPreferences.systemEnabled },
+            set: { model.onNotificationPreferencesChange(
+                NotificationPreferences(systemEnabled: $0,
+                                        agentMessages: model.notificationPreferences.agentMessages,
+                                        finished: model.notificationPreferences.finished,
+                                        failed: model.notificationPreferences.failed)) })
+    }
+
+    private func kind(_ noticeKind: NoticeKind) -> Binding<Bool> {
+        Binding(
+            get: { model.notificationPreferences.isEnabled(noticeKind) },
+            set: { model.onNotificationPreferencesChange(
+                NotificationPreferences(systemEnabled: model.notificationPreferences.systemEnabled,
+                                        agentMessages: noticeKind == .agentMessage ? $0 : model.notificationPreferences.agentMessages,
+                                        finished: noticeKind == .finished ? $0 : model.notificationPreferences.finished,
+                                        failed: noticeKind == .failed ? $0 : model.notificationPreferences.failed)) })
+    }
+
+    private func row<Control: View>(
+        title: String,
+        detail: String,
+        @ViewBuilder control: () -> Control
+    ) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13))
+                Text(detail)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 24)
+            control()
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+    }
 }

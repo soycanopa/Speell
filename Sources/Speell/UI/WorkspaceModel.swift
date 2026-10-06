@@ -27,6 +27,7 @@ enum AppMode {
 enum SettingsSection: String, CaseIterable, Identifiable {
     case apariencia
     case agentes
+    case notificaciones
 
     var id: String { rawValue }
 
@@ -34,6 +35,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         switch self {
         case .apariencia: return "Apariencia"
         case .agentes: return "Agentes"
+        case .notificaciones: return "Notificaciones"
         }
     }
 
@@ -41,6 +43,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         switch self {
         case .apariencia: return "paintbrush"
         case .agentes: return "cpu"
+        case .notificaciones: return "bell"
         }
     }
 }
@@ -77,6 +80,13 @@ final class WorkspaceModel: ObservableObject {
     /// los ausentes están habilitados. Reinicia al arrancar.
     @Published var agentPreferences: AgentPreferences = AgentPreferences()
 
+    /// Tabs con aviso pendiente de mirar (el agente mandó algo o terminó).
+    /// El punto de la tab vive aquí; se limpia al seleccionar la tab.
+    @Published var noticedTabIds: Set<UUID> = []
+
+    /// Preferencias de notificaciones persistidas (settings → Notificaciones).
+    @Published var notificationPreferences = NotificationPreferences()
+
     /// Modo de la app y sección activa de la configuración.
     @Published var appMode: AppMode = .workspace
     @Published var settingsSection: SettingsSection = .apariencia
@@ -101,6 +111,8 @@ final class WorkspaceModel: ObservableObject {
     var onAppearanceChange: (String, String?, Double) -> Void = { _, _, _ in }
     /// Toggle de un agente en settings → Agentes: habilitar o deshabilitar.
     var onAgentToggle: (AgentKind, Bool) -> Void = { _, _ in }
+    /// Cambio de preferencias de notificaciones.
+    var onNotificationPreferencesChange: (NotificationPreferences) -> Void = { _ in }
 
     var activeProject: Project? {
         projects.first { $0.id == activeProjectId }

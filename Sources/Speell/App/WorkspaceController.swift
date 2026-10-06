@@ -1,4 +1,5 @@
 import AppKit
+import GhosttyKit
 
 /// Composition root del workspace: une stores, adaptadores, tabs y surfaces de
 /// libghostty. La UI solo ve `WorkspaceModel`; ninguna vista arma un comando.
@@ -28,16 +29,44 @@ final class WorkspaceController {
     private var agentPreferences = AgentPreferences()
     private let settingsStore: JSONStore
 
+    /// Entrega de avisos como notificaciones nativas del sistema.
+    private lazy var noticeCenter = NoticeCenter(onActivate: { [weak self] tabId in
+        self?.selectTab(id: tabId)
+    })
+
     /// Nombre del archivo de preferencias de agentes en Application Support.
     private static let agentPreferencesFile = "agent-preferences"
+    /// Nombre del archivo de preferencias de notificaciones.
+    private static let notificationPreferencesFile = "notification-preferences"
+
+    /// Un aviso de una surface: punto en la tab siempre, y notificación
+    /// nativa solo si la ventana no está activa y el tipo está encendido
+    /// (FLOW F4).
+    private func handleSurfaceNotice(_ surface: ghostty_surface_t, _ notice: AgentNotice) {
+        guard let tabId = pane.tabId(forSurface: surface),
+              let tab = sessions.tabs.first(where: { $0.id == tabId }) else { return }
+
+        model.noticedTabIds.insert(tabId)
+        let preferences = model.notificationPreferences
+        guard preferences.systemEnabled, preferences.isEnabled(notice.kind) else { return }
+        guard !NSApp.isActive else { return }
+
+        _ = noticeCenter.post(notice, tabId: tabId, tabTitle: tab.title)
+    }
 
     init(host: GhosttyHost, pane: TerminalPane) {
         self.host = host
         self.pane = pane
         self.settingsStore = .applicationSupport
         agentPreferences = settingsStore.load(AgentPreferences.self, named: Self.agentPreferencesFile) ?? AgentPreferences()
+        model.notificationPreferences = settingsStore.load(
+            NotificationPreferences.self,
+            named: Self.notificationPreferencesFile) ?? NotificationPreferences()
         wireIntents()
         model.agentPreferences = agentPreferences
+        host.onSurfaceNotice = { [weak self] surface, notice in
+            self?.handleSurfaceNotice(surface, notice)
+        }
         model.availableAgents = AgentKind.allCases.filter {
             adapters[$0] != nil && agentPreferences.isEnabled($0)
         }
@@ -63,6 +92,11 @@ final class WorkspaceController {
             self.model.availableAgents = AgentKind.allCases.filter {
                 self.adapters[$0] != nil && self.agentPreferences.isEnabled($0)
             }
+        }
+        model.onNotificationPreferencesChange = { [weak self] preferences in
+            guard let self else { return }
+            self.settingsStore.save(preferences, named: Self.notificationPreferencesFile)
+            self.model.notificationPreferences = preferences
         }
         model.onAppearanceChange = { [weak self] hex, fontFamily, fontSize in
             guard let self else { return }

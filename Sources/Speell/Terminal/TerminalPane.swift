@@ -14,6 +14,12 @@ final class TerminalPane: NSView {
         surfaceViews.values.compactMap(\.surface)
     }
 
+    /// La tab dueña de una surface: así los avisos del pin (que llegan con la
+    /// surface) saben a qué tab pertenecen.
+    func tabId(forSurface surface: ghostty_surface_t) -> UUID? {
+        surfaceViews.first { $0.value.surface == surface }?.key
+    }
+
     /// Crea o reemplaza la surface de una tab. Quien la crea es el controller.
     func install(_ surfaceView: SurfaceView, forTab id: UUID) {
         surfaceViews[id]?.removeFromSuperview()

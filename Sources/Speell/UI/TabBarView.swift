@@ -1,16 +1,24 @@
 import SwiftUI
 
 /// Una tab: título y botón de cerrar siempre visible.
-/// El punto de estado llega con los avisos (fase 4).
 struct TabItem: View {
     let tab: Tab
     let active: Bool
     let backgroundHex: String
+    var hasNotice: Bool
     var onSelect: () -> Void
     var onClose: () -> Void
 
     var body: some View {
         HStack(spacing: 6) {
+            // El punto de aviso (FLOW F4): algo pasó en esta tab y no se ha
+            // mirado; desaparece al seleccionarla.
+            if hasNotice {
+                Circle()
+                    .fill(Color.orange)
+                    .frame(width: 7, height: 7)
+            }
+
             Text(tab.title)
                 .font(.system(size: 13))
                 .lineLimit(1)
@@ -59,6 +67,7 @@ struct TabBarView: View {
                     tab: tab,
                     active: tab.id == model.activeTabId,
                     backgroundHex: model.terminalBackgroundHex,
+                    hasNotice: model.noticedTabIds.contains(tab.id),
                     onSelect: { model.onSelectTab(tab.id) },
                     onClose: { model.onCloseTab(tab.id) })
             }
