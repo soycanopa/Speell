@@ -23,6 +23,25 @@ servicio de fondo) o de una corrida real.
 Agy no tiene subcomando de sesiones: `list` es siempre vacío y el modal degrada
 a "sesión nueva" (FLOW F2). Está declarado en el adaptador, no parcheado.
 
+**La documentación oficial de Antigravity confirma el contrato del adaptador**
+
+(`antigravity.google/docs/cli/conversations/` y `/docs/cli/commands/resume/`):
+
+- El scoping es por cwd: "Antigravity CLI scopes conversation histories
+  directly to your current working directory… only displays and resumes
+  sessions associated with that specific local repository or subdirectory."
+- `agy -c` / `--continue`: "instantly resume the single most recent
+  conversation associated with your active workspace".
+- `agy --conversation <id>`: "load a specific conversation directly by its
+  unique ID".
+- El único artefacto legible fuera del TUI es el cache **documentado**
+  `~/.gemini/antigravity-cli/cache/last_conversations.json`: un mapa
+  workspace → último id de conversación. No hay listado con títulos fuera del
+  Session Picker del TUI, así que `list → []` sigue siendo lo honesto. El CLI
+  ya lee ese cache para `--continue`, con verificación contra el backend y
+  fallback a sesión nueva si el hilo no existe: `--continue` nunca falla, y
+  ese comportamiento sirve para lo que espera F6.
+
 ## Desviaciones de la fase 2, con motivo
 
 1. **`canPinSessionId` en el protocolo.** Grok y OpenCode 2 aceptan fijar el id
@@ -51,10 +70,29 @@ La regla dice "OpenCode 2 no comparte store con `opencode`. Datos en
   `~/.nvm/versions/node/v24.21.0/bin/opencode`), así que la colisión de
   directorio es entre dos CLIs ajenos a Speell.
 
+**La documentación oficial lo confirma como diseño del proveedor, no un accidente:**
+
+- `opencode.ai/v2/docs/cli/` (sección Uninstall): "These directories are
+  **shared by OpenCode versions and channels**."
+- `opencode.ai/v2/docs/migrate-v1/`: "OpenCode 1 and OpenCode 2 both use the
+  `opencode` command and are no longer installed side by side by default" y
+  "**V1 and V2 use the same configuration locations**". El nombre `opencode2`
+  es un arreglo local del binario; el binario sigue usando las ubicaciones
+  compartidas de la línea de producto.
+
 Speell no toca ese store: el adaptador solo llama al CLI. Fijar `XDG_DATA_HOME`
 para "cumplir" la regla aislaría las sesiones que Speell ve de las que el
 usuario ve en su terminal, y eso rompe el producto. Se mantiene el default del
 CLI **hasta que Carlos decida**; la regla de `AGENTS.md` queda en revisión.
+
+Datos oficiales útiles que salieron de la misma lectura:
+
+- `opencode debug paths db` imprime la ruta del store (documentado; respeta el
+  canal de release y `OPENCODE_DB`). Para verificar, no para leer.
+- `opencode service set disabled true` desactiva el servicio compartido y hace
+  servidores privados el default; `--standalone` lo hace por invocación. No se
+  usa hoy: los tabs comparten el servicio del usuario, igual que su terminal.
+  Queda como endurecimiento de F8 si algún día queda un servicio huérfano.
 
 ## Bugs y límites observados del CLI
 
@@ -77,3 +115,14 @@ CLI **hasta que Carlos decida**; la regla de `AGENTS.md` queda en revisión.
 - Que el título aparezca en el formato slim de `session list --format json`:
   las sesiones capturadas no lo tenían. El parser lo decodifica como opcional
   según `Session.Info` del OpenAPI del binario.
+
+## Leads para la fase 4 (avisos), de la misma lectura
+
+- Agy tiene `notifications` en `settings.json` (default `false`): "Emits system
+  desktop and terminal bell chime notifications upon task completions". El
+  camino sería activarlo y escuchar la campana en la surface, además del orden
+  hook → OSC 9/777 → `hooks: none` del plan.
+- El SDK de Antigravity documenta "Lifecycle hooks": fuente a revisar antes de
+  declarar a Agy como `hooks: none`.
+- `opencode2 acp` existe ("Start an Agent Client Protocol server"): canal de
+  eventos estructurado si el hook/OSC no alcanza. No se usa en la fase 3.
