@@ -43,8 +43,10 @@ struct SidebarView: View {
                     .buttonStyle(.plain)
                     .help("Añadir proyecto")
                 }
-                .padding(.leading, 8)
-                .padding(.trailing, 4)
+                // El header arrastra además el inset propio del estilo sidebar
+                // (14 pt): con -6 en el leading, el título cae a 8 pt del
+                // borde —igual que las filas— y el `+` queda a 8 del derecho.
+                .padding(.leading, -6)
                 // Aire propio del título: contra la primera fila y contra el
                 // borde de arriba de la sidebar.
                 .padding(.vertical, 3)
