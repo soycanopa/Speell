@@ -78,9 +78,28 @@ enum SpeellPalette {
     static var pane: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
             topLeadingRadius: 0,
-            bottomLeadingRadius: cornerRadius,
+            bottomLeadingRadius: 0,
             bottomTrailingRadius: cornerRadius,
             topTrailingRadius: cornerRadius,
             style: .continuous)
     }
+
+    /// La forma de la sidebar: redondeada a la izquierda, que da contra el
+    /// margen de la ventana. A la derecha va recta: es el lado que enfrenta a
+    /// la terminal, y dos esquinas redondeadas enfrentadas a través del canal
+    /// se leían como un círculo entre las dos.
+    static var sidebarPane: UnevenRoundedRectangle {
+        UnevenRoundedRectangle(
+            topLeadingRadius: cornerRadius,
+            bottomLeadingRadius: cornerRadius,
+            bottomTrailingRadius: 0,
+            topTrailingRadius: 0,
+            style: .continuous)
+    }
+
+    /// Lo que el divisor del split view suma al hueco visual entre la sidebar
+    /// y la terminal (NSSplitViewController lo fija en 5): es transparente
+    /// pero ocupa sitio. Se descuenta del padding interno de la sidebar para
+    /// que el canal mida lo mismo que los márgenes de la ventana.
+    static let splitDividerAllowance: CGFloat = 5
 }

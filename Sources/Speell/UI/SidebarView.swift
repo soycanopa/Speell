@@ -33,11 +33,12 @@ struct SidebarView: View {
         }
         // La sidebar es la misma superficie que la ventana: un rectángulo del
         // mismo color, redondeado, y encima el contenido.
-        .background(SpeellPalette.corner.fill(SpeellPalette.windowBackgroundColor))
-        .clipShape(SpeellPalette.corner)
-        // Hueco contra la terminal, por fuera del recorte: los 8 px quedan sin
-        // fondo, que es justo la separación que se ve.
-        .padding(.trailing, SpeellPalette.windowPadding)
+        .background(SpeellPalette.sidebarPane.fill(SpeellPalette.windowBackgroundColor))
+        .clipShape(SpeellPalette.sidebarPane)
+        // Hueco contra la terminal, por fuera del recorte. Se descuenta el
+        // ancho del divisor del split para que el canal visible mida 8 como
+        // los márgenes de la ventana, no 13.
+        .padding(.trailing, SpeellPalette.windowPadding - SpeellPalette.splitDividerAllowance)
         .frame(minWidth: 180, idealWidth: 240, maxWidth: 320)
     }
 
