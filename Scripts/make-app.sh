@@ -8,8 +8,17 @@ CONFIG="${1:-debug}"
 BIN=".build/$CONFIG/Speell"
 APP=".build/$CONFIG/Speell.app"
 [ -f "$BIN" ] || { echo "no existe $BIN (corre swift build primero)"; exit 1; }
-mkdir -p "$APP/Contents/MacOS"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/Speell"
+# El bundle de recursos de SwiftPM (los svgs de los iconos, via
+# Bundle.module): sin él, el accessor mata el proceso con fatalError al
+# primer acceso. Va en Contents/Resources y junto al ejecutable, los dos
+# lugares donde el accessor lo busca.
+RESOURCES_BUNDLE=".build/$CONFIG/Speell_Speell.bundle"
+if [ -d "$RESOURCES_BUNDLE" ]; then
+  cp -R "$RESOURCES_BUNDLE" "$APP/Contents/Resources/"
+  cp -R "$RESOURCES_BUNDLE" "$APP/Contents/MacOS/"
+fi
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
