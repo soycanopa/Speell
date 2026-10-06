@@ -32,8 +32,8 @@ final class WorkspaceModel: ObservableObject {
     /// que el app bar pueda alinear los tabs con el borde de la terminal sin
     /// conocer el split.
     ///
-    /// No es el ancho de la sidebar: es su borde derecho, que ya incluye el
-    /// divider. Los botones de ventana no se suman porque solo ocupan la parte
+    /// No es el ancho de la sidebar: es su borde derecho más el divisor del
+    /// split. Los botones de ventana no se suman porque solo ocupan la parte
     /// de la franja que cae sobre la sidebar.
     @Published var contentLeadingOffset: CGFloat = 241
 

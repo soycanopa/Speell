@@ -21,11 +21,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         MainMenu.install()
 
+        // Item plano, no `sidebarWithViewController`: el behavior de sidebar
+        // instala detrás de toda la columna el material vibrante de macOS, que
+        // pintaba los 8 pt de separación con otro tono y tapaba las esquinas
+        // redondeadas del clip. Speell pinta sus propias superficies, así que
+        // detrás no tiene que haber nada del sistema.
         let sidebar = NSSplitViewItem(
-            sidebarWithViewController: hosting(SidebarView(model: controller.model)))
+            viewController: hosting(SidebarView(model: controller.model)))
         sidebar.minimumThickness = 180
         sidebar.maximumThickness = 320
         sidebar.canCollapse = true
+        // Con ambos items en 250 el divider deriva proporcionalmente al
+        // redimensionar la ventana. La sidebar fija su ancho, como hacía el
+        // behavior de sidebar, y la terminal cede.
+        sidebar.holdingPriority = NSLayoutConstraint.Priority(260)
 
         let split = WorkspaceSplitViewController()
         split.addSplitViewItem(sidebar)

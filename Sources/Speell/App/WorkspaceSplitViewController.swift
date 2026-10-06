@@ -21,9 +21,11 @@ final class WorkspaceSplitViewController: NSSplitViewController {
     var onSidebarWidthChanged: ((CGFloat) -> Void)?
 
     /// Distancia desde el borde izquierdo del contenido hasta donde empieza la
-    /// terminal: el borde derecho de la sidebar, que ya incluye el divider.
+    /// terminal: el borde derecho de la sidebar más el divisor que macOS
+    /// dibuja entre las dos.
     var contentLeadingOffset: CGFloat? {
-        sidebarItem?.viewController.view.frame.maxX
+        guard let item = sidebarItem else { return nil }
+        return item.viewController.view.frame.maxX + splitView.dividerThickness
     }
 
     override func splitViewDidResizeSubviews(_ notification: Notification) {
