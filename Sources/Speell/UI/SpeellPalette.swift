@@ -57,53 +57,23 @@ enum SpeellPalette {
 
     /// La forma de la tab activa: redondeada arriba, recta abajo, porque nace
     /// pegada a la terminal y se continúa en ella.
-    static var attachedTab: HalfRoundedRect {
-        HalfRoundedRect(cornerRadius: cornerRadius, roundedTop: true)
+    static var attachedTab: UnevenRoundedRectangle {
+        UnevenRoundedRectangle(
+            topLeadingRadius: cornerRadius,
+            bottomLeadingRadius: 0,
+            bottomTrailingRadius: 0,
+            topTrailingRadius: cornerRadius,
+            style: .continuous)
     }
 
     /// La forma del pane de la terminal: recto arriba —el app bar y la tab
     /// activa se apoyan en ese borde—, redondeado abajo.
-    static var pane: HalfRoundedRect {
-        HalfRoundedRect(cornerRadius: cornerRadius, roundedTop: false)
-    }
-}
-
-/// Esquinas redondeadas solo en la mitad de arriba o solo en la de abajo.
-///
-/// La tab activa redondea arriba y la terminal abajo: se empalman la una con
-/// la otra y las esquinas del empalme van rectas. `UnevenRoundedRectangle`
-/// pide macOS 13.4 y el target es 13.0, así que el path es propio.
-struct HalfRoundedRect: Shape {
-    var cornerRadius: CGFloat
-    var roundedTop: Bool
-
-    func path(in rect: CGRect) -> Path {
-        let r = min(cornerRadius, rect.width / 2, rect.height / 2)
-        var path = Path()
-        if roundedTop {
-            path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-            path.addArc(
-                tangent1End: CGPoint(x: rect.minX, y: rect.minY + r),
-                tangent2End: CGPoint(x: rect.minX + r, y: rect.minY),
-                radius: r)
-            path.addArc(
-                tangent1End: CGPoint(x: rect.maxX - r, y: rect.minY),
-                tangent2End: CGPoint(x: rect.maxX, y: rect.minY + r),
-                radius: r)
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        } else {
-            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-            path.addArc(
-                tangent1End: CGPoint(x: rect.maxX, y: rect.maxY - r),
-                tangent2End: CGPoint(x: rect.maxX - r, y: rect.maxY),
-                radius: r)
-            path.addArc(
-                tangent1End: CGPoint(x: rect.minX + r, y: rect.maxY),
-                tangent2End: CGPoint(x: rect.minX, y: rect.maxY - r),
-                radius: r)
-        }
-        path.closeSubpath()
-        return path
+    static var pane: UnevenRoundedRectangle {
+        UnevenRoundedRectangle(
+            topLeadingRadius: 0,
+            bottomLeadingRadius: cornerRadius,
+            bottomTrailingRadius: cornerRadius,
+            topTrailingRadius: 0,
+            style: .continuous)
     }
 }

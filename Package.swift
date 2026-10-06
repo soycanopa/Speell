@@ -3,7 +3,9 @@ import PackageDescription
 
 let package = Package(
     name: "Speell",
-    platforms: [.macOS(.v13)],
+    // 13.4 por `UnevenRoundedRectangle` —la forma de la tab activa y del pane
+    // redondea esquinas distintas—; antes de eso no existe en SwiftUI.
+    platforms: [.macOS("13.4")],
     targets: [
         // libghostty del pin (Vendor/ghostty.pin). Lo genera
         // Scripts/build-libghostty.sh; no se commitea por peso.
