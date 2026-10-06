@@ -29,23 +29,30 @@ Decisiones técnicas y cut en [`docs/TRD.md`](docs/TRD.md).
 ## Estructura
 
 ```text
-docs/       PRD, TRD, UX, UI, FLOW, IMPLEMENTACION
+docs/       PRD, TRD, UX, UI, FLOW, IMPLEMENTACION, decisions/
+Vendor/     ghostty.pin (commit del motor) y el xcframework generado (no commiteado)
+Scripts/    build-libghostty.sh
 AGENTS.md   reglas de trabajo del repo
-Sources/Speell/   (pendiente: App, Domain, Projects, Sessions, Agents, Hooks, Notify, Terminal, UI)
+Sources/Speell/
+  App/       composition root: main, ventana, menú
+  Terminal/  host de libghostty, surface, entrada
+  (pendiente: Domain, Projects, Sessions, Agents, Hooks, Notify, UI)
 ```
 
 Del TRD, dirección de dependencia: `App → Projects / Notify → Sessions → Agents`. `Terminal` no importa `Agents`; `Agents` no importa SwiftUI ni AppKit.
 
 ## Build
 
-Pendiente. El motor se genera con el checkout pinneado de Ghostty:
+Requiere Xcode: `xcodebuild -create-xcframework` no existe en CommandLineTools. El artefacto no se commitea por peso; se commitean el pin y su hash.
 
 ```bash
-zig build -Demit-xcframework=true -Dxcframework-target=native \
-  -Demit-macos-app=false -Doptimize=ReleaseFast
+Scripts/build-libghostty.sh   # zig del pin si falta, clona Ghostty y genera el xcframework
+swift build                   # compila la app
+swift run Speell              # spike: una ventana con una surface, shell en $HOME
+Scripts/build-libghostty.sh --verify   # compara el artefacto con el hash commiteado
 ```
 
-El commit del pin se fija en el spike y no es `latest`.
+El pin (commit de Ghostty + versión de zig) vive en `Vendor/ghostty.pin`; el porqué, en [`docs/decisions/0001-pin-libghostty.md`](docs/decisions/0001-pin-libghostty.md).
 
 ## Documentos
 
