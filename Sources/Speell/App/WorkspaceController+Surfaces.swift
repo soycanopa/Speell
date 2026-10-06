@@ -8,12 +8,12 @@ extension WorkspaceController {
             // Restaurar una tab de agente nueva sin puntero ya no puede
             // recrear su hilo: el proceso murió con la app. Lo que queda es el
             // último de la carpeta, y la etiqueta de la tab lo dice (FLOW F3).
-            if tab.kind == .agent, tab.resumeQuality == .fresh {
-                var restored = tab
+            var restored = tab
+            if restored.kind == .agent, restored.resumeQuality == .fresh {
                 restored.resumeQuality = .latestInDir
                 sessions.update(restored)
             }
-            installSurface(for: tab)
+            installSurface(for: restored)
         }
     }
 
