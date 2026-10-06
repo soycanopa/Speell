@@ -33,8 +33,18 @@ struct TabItem: View {
             }
         }
         .padding(.horizontal, 10)
-        .frame(height: 28)
-        .background(active ? Color(nsColor: .controlBackgroundColor) : Color.clear)
+        // Cuatro puntos menos que el app bar: dos de aire arriba y dos abajo,
+        // para que la tab activa se lea como una forma y no como un bloque
+        // que llena la franja entera.
+        .frame(height: AppBarView.height - 4)
+        // Solo la tab activa lleva fondo y forma. La inactiva se apoya en el
+        // fondo de la ventana y se distingue por el texto.
+        .background {
+            if active {
+                Color(nsColor: .controlBackgroundColor)
+                    .clipShape(SpeellPalette.corner)
+            }
+        }
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
         .onHover { hovering = $0 }
@@ -73,7 +83,7 @@ struct TabBarView: View {
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 11, weight: .medium))
-                    .frame(width: 28, height: 28)
+                    .frame(width: 24, height: AppBarView.height - 4)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

@@ -10,7 +10,7 @@ import SwiftUI
 /// iconos del panel que se va a desarrollar.
 struct AppBarView: View {
     /// Alto de la franja.
-    static let height: CGFloat = 38
+    static let height: CGFloat = 28
 
     @ObservedObject var model: WorkspaceModel
 

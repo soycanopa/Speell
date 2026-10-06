@@ -14,7 +14,8 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 - Título: nombre del proyecto activo. Si no hay proyecto, "Speell". Vive en `window.title` para accesibilidad, pero **no se dibuja**: la barra de título está oculta.
 - **Sin barra de título.** La ventana usa `titlebarAppearsTransparent`, `titleVisibility = .hidden` y `fullSizeContentView`, que va en el `styleMask` de creación: insertado después no recalcula el layout.
 - macOS sigue reservando la franja de la barra de título aunque el content view la ocupe, y el `NSSplitViewController` maqueta sus columnas contra el área reservada. Por eso la franja la ocupa **Speell**, no el sistema: un `AppBarView` de ancho completo apilado encima del contenido, dentro de un contenedor.
-- **App bar: 38 pt de alto, de ancho completo.** A la izquierda, el hueco que ocupa la sidebar más el divider, para que los tabs arranquen exactamente en el borde de la terminal. Los botones de ventana, que macOS sigue dibujando sobre la sidebar, caen dentro de ese hueco: no se les reserva ancho aparte. Luego los tabs. Luego, a la derecha, la zona reservada y **vacía a propósito** para los iconos del panel que se va a desarrollar; no se inventan iconos ahí.
+- **Una sola superficie de fondo para toda la ventana: `#181818`.** App bar, margen exterior y separación entre la sidebar y la terminal son el mismo color. Antes era el gris del sistema, y los huecos de 8 px se leían como un canal claro en medio de dos superficies oscuras. Vive en `SpeellPalette.windowBackground` como `NSColor`, porque lo pinta la ventana.
+- **App bar: 28 pt de alto, de ancho completo.** A la izquierda, el hueco que ocupa la sidebar más el divider, para que los tabs arranquen exactamente en el borde de la terminal. Los botones de ventana, que macOS sigue dibujando sobre la sidebar, caen dentro de ese hueco: no se les reserva ancho aparte. Luego los tabs. Luego, a la derecha, la zona reservada y **vacía a propósito** para los iconos del panel que se va a desarrollar; no se inventan iconos ahí.
 - El hueco del app bar lo publica el composition root como `WorkspaceModel.contentLeadingOffset`, que es el borde derecho de la sidebar —su `frame.maxX`, ya con el divider— y no su ancho. Leer el ancho y además sumar el ancho de los botones de ventana empujaba los tabs 77 px hacia dentro de la terminal.
 - La sidebar se identifica **por referencia** (`WorkspaceSplitViewController.sidebarItem`), nunca por índice: `splitView.subviews.first` devuelve la terminal, no la sidebar, y esa confusion ponía los tabs 831 px a la derecha.
 - Los tabs y el app bar **no llevan línea debajo**: la terminal llega hasta arriba.
@@ -43,7 +44,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
   - terminó: verde
   - falló: rojo
   - sin hook: ninguno, y el menú de la tab lo dice
-- Tab activa: contraste de fondo, no un subrayado de navegador.
+- Tab activa: contraste de fondo, no un subrayado de navegador. **Solo la activa lleva las cuatro esquinas redondeadas** (mismo radio que sidebar y terminal, `SpeellPalette.corner`); las inactivas van planas y se distinguen solo por el texto. Alto de tab: app bar menos 4, para que queden 2 pt de aire arriba y abajo.
 - `+` al final, no una tab falsa.
 
 ## Surface
