@@ -6,7 +6,7 @@ No es un IDE, ni un cliente de chat, ni otra terminal genérica. Cada tab es una
 
 ## Estado
 
-Pre-MVP. Solo especificación y decisiones. Aún no hay código: la primera tarea es el spike de surface (Fase 0).
+**v0.1.0** — terminal y los tres agentes del MVP funcionando: fases 0-3 cerradas (surface, proyectos y tabs, adaptadores de Grok / OpenCode 2 / Agy, settings y avisos en curso). Descargas y notas en [releases](https://github.com/soycanopa/Speell/releases); el plan fase a fase vive en [`docs/IMPLEMENTACION.md`](docs/IMPLEMENTACION.md).
 
 ## Qué hace
 
