@@ -13,6 +13,11 @@ struct SidebarView: View {
                             project: project,
                             missing: model.missingProjectIds.contains(project.id))
                             .tag(project.id)
+                            // El estilo sidebar fija el leading de la celda en
+                            // ~16 pt y `listRowInsets` no lo mueve; se compensa
+                            // con padding negativo en el contenido. La selección
+                            // sigue siendo la del sistema, a lo ancho de la fila.
+                            .padding(.horizontal, -8)
                             .contextMenu {
                                 Button("Quitar de la sidebar") {
                                     model.onRemoveProject(project.id)
@@ -40,7 +45,7 @@ struct SidebarView: View {
             }
             .buttonStyle(.plain)
             .help("Añadir proyecto")
-            .padding(10)
+            .padding(8)
         }
         // La sidebar es la misma superficie que la ventana: un rectángulo del
         // mismo color, redondeado, y encima el contenido. El `List` pinta su

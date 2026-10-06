@@ -35,6 +35,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 - Fila activa: selección del sistema (`NSVisualEffect` / selección de lista), no un azul inventado.
 - Sección única, "Proyectos". Sin favoritos ni grupos en v1.
 - Pie: botón de solo icono `+`, tooltip "Añadir proyecto". Sin línea encima: el `Divider` se leía como un borde del botón.
+- Inset de contenido: 8 pt. Las filas lo fijan con `listRowInsets` porque el estilo sidebar las mete ~16 pt —demasiado holgado para un sidebar enmarcado en su propia superficie— y el pie lleva `padding(8)`.
 
 ## Tabs
 
