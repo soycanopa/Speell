@@ -28,7 +28,7 @@ struct SettingsView: View {
     private var content: some View {
         switch model.settingsSection {
         case .apariencia: AppearanceSection(model: model)
-        case .agentes: AgentsSection()
+        case .agentes: AgentsSection(model: model)
         }
     }
 }
@@ -51,19 +51,8 @@ private struct AppearanceSection: View {
         _fontSize = State(initialValue: TerminalPalette.fontSize(in: directory))
     }
 
-    /// Tipografías monoespaciadas conocidas, filtradas por las instaladas.
-    /// La terminal no pide cualquier fuente: pide mono.
-    private static let monoFonts = [
-        "JetBrains Mono", "Fira Code", "Hack", "SF Mono", "Menlo", "Monaco",
-        "Source Code Pro", "Inconsolata", "IBM Plex Mono", "Cascadia Code",
-        "Andale Mono", "Courier New",
-    ]
-
-    /// Las instaladas de la lista curada, alfabéticas.
-    private var availableFonts: [String] {
-        let installed = Set(NSFontManager.shared.availableFonts)
-        return Self.monoFonts.filter { installed.contains($0) }.sorted()
-    }
+    /// Tipografías monoespaciadas instaladas, medidas por avance de glifo.
+    @State private var availableFonts: [String] = MonoFonts.installed()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -154,56 +143,84 @@ private struct AppearanceSection: View {
     }
 }
 
-/// Agentes: qué binarios del PATH encuentra Speell y dónde. Diagnóstico de
-/// lectura; sin controles por ahora.
+/// Agentes: toggle de habilitación (el agente sale o entra en el menú del `+`)
+/// y diagnóstico del binario en el PATH. Deshabilitar no toca las tabs
+/// abiertas: solo deja de ofrecerlo.
 private struct AgentsSection: View {
-    @State private var diagnostics: [AgentDiagnostic] = []
+    @ObservedObject var model: WorkspaceModel
+
+    @State private var diagnostics: [AgentKind: String?] = [:]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if diagnostics.isEmpty {
-                Text("Buscando binarios…")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .padding(12)
-            }
-            ForEach(diagnostics) { diagnostic in
-                row(diagnostic)
-                Divider().padding(.leading, 12)
+            ForEach(AgentKind.allCases, id: \.self) { kind in
+                row(kind)
+                if kind != AgentKind.allCases.last {
+                    Divider().padding(.leading, 14)
+                }
             }
         }
-        .onAppear(perform: load)
+        .onAppear(perform: resolvePaths)
     }
 
-    private func row(_ diagnostic: AgentDiagnostic) -> some View {
-        HStack(spacing: 8) {
+    private func row(_ kind: AgentKind) -> some View {
+        let enabled = model.agentPreferences.isEnabled(kind)
+        return HStack(spacing: 10) {
             Circle()
-                .fill(diagnostic.path == nil ? Color.red.opacity(0.8) : Color.green.opacity(0.8))
+                .fill(diagnosticColor(kind))
                 .frame(width: 7, height: 7)
-            Text(diagnostic.kind.displayName)
-                .font(.system(size: 13))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(kind.displayName)
+                    .font(.system(size: 13))
+                    .foregroundStyle(enabled ? Color.primary : Color.secondary)
+                Text(pathLabel(kind))
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
             Spacer(minLength: 12)
-            Text(diagnostic.path ?? "no está en el PATH")
-                .font(.system(size: 11, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
+            Toggle("", isOn: binding(kind))
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .help(enabled ? "Deshabilitar agente" : "Habilitar agente")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
     }
 
-    private func load() {
-        diagnostics = AgentKind.allCases.map { kind in
+    private func binding(_ kind: AgentKind) -> Binding<Bool> {
+        Binding(
+            get: { model.agentPreferences.isEnabled(kind) },
+            set: { model.onAgentToggle(kind, $0) })
+    }
+
+    /// Verde si el binario existe, rojo si no, gris mientras se resuelve.
+    private func diagnosticColor(_ kind: AgentKind) -> Color {
+        switch diagnostics[kind] {
+        case .some(.some): return Color.green.opacity(0.8)
+        case .some(.none): return Color.red.opacity(0.8)
+        case .none: return Color.secondary.opacity(0.5)
+        }
+    }
+
+    private func pathLabel(_ kind: AgentKind) -> String {
+        switch diagnostics[kind] {
+        case .some(.some(let path)): return path
+        case .some(.none): return "no está en el PATH"
+        case .none: return "buscando…"
+        }
+    }
+
+    private func resolvePaths() {
+        for kind in AgentKind.allCases where diagnostics[kind] == nil {
             let path = CLIProcess.run(
                 executable: "/usr/bin/which",
                 arguments: [kind.rawValue],
                 cwd: NSHomeDirectory(),
                 timeout: 2)?
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            return AgentDiagnostic(
-                kind: kind,
-                path: path?.isEmpty == false ? path : nil)
+            diagnostics[kind] = path?.isEmpty == false ? path : nil
         }
     }
 }

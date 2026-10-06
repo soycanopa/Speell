@@ -73,6 +73,10 @@ final class WorkspaceModel: ObservableObject {
     @Published var agentSessions: [SessionRef] = []
     @Published var loadingSessions = false
 
+    /// Agentes habilitados por el usuario (settings → Agentes). Persistido;
+    /// los ausentes están habilitados. Reinicia al arrancar.
+    @Published var agentPreferences: AgentPreferences = AgentPreferences()
+
     /// Modo de la app y sección activa de la configuración.
     @Published var appMode: AppMode = .workspace
     @Published var settingsSection: SettingsSection = .apariencia
@@ -95,6 +99,8 @@ final class WorkspaceModel: ObservableObject {
     /// Cambio de apariencia de la terminal desde la configuración:
     /// fondo `#RRGGBB`, tipografía (`nil` = la bundled del CLI) y tamaño.
     var onAppearanceChange: (String, String?, Double) -> Void = { _, _, _ in }
+    /// Toggle de un agente en settings → Agentes: habilitar o deshabilitar.
+    var onAgentToggle: (AgentKind, Bool) -> Void = { _, _ in }
 
     var activeProject: Project? {
         projects.first { $0.id == activeProjectId }

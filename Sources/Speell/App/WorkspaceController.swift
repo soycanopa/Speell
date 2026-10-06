@@ -24,11 +24,23 @@ final class WorkspaceController {
     /// Última tab activa de cada proyecto. Solo en memoria.
     var lastTabByProject: [UUID: UUID] = [:]
 
+    /// Preferencias de agentes persistidas (settings → Agentes).
+    private var agentPreferences = AgentPreferences()
+    private let settingsStore: JSONStore
+
+    /// Nombre del archivo de preferencias de agentes en Application Support.
+    private static let agentPreferencesFile = "agent-preferences"
+
     init(host: GhosttyHost, pane: TerminalPane) {
         self.host = host
         self.pane = pane
+        self.settingsStore = .applicationSupport
+        agentPreferences = settingsStore.load(AgentPreferences.self, named: Self.agentPreferencesFile) ?? AgentPreferences()
         wireIntents()
-        model.availableAgents = AgentKind.allCases.filter { adapters[$0] != nil }
+        model.agentPreferences = agentPreferences
+        model.availableAgents = AgentKind.allCases.filter {
+            adapters[$0] != nil && agentPreferences.isEnabled($0)
+        }
         model.terminalBackgroundHex = TerminalPalette.backgroundHex(
             in: TerminalPalette.applicationSupportDirectory)
     }
@@ -43,6 +55,15 @@ final class WorkspaceController {
         model.onCancelSessionPicker = { [weak self] in self?.cancelSessionPicker() }
         model.onSelectTab = { [weak self] id in self?.selectTab(id: id) }
         model.onCloseTab = { [weak self] id in self?.closeTab(id: id) }
+        model.onAgentToggle = { [weak self] agent, enabled in
+            guard let self else { return }
+            self.agentPreferences.setEnabled(enabled, for: agent)
+            self.settingsStore.save(self.agentPreferences, named: Self.agentPreferencesFile)
+            self.model.agentPreferences = self.agentPreferences
+            self.model.availableAgents = AgentKind.allCases.filter {
+                self.adapters[$0] != nil && self.agentPreferences.isEnabled($0)
+            }
+        }
         model.onAppearanceChange = { [weak self] hex, fontFamily, fontSize in
             guard let self else { return }
             let directory = TerminalPalette.applicationSupportDirectory
