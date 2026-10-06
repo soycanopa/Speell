@@ -72,18 +72,21 @@ struct TabBarView: View {
                     onClose: { model.onCloseTab(tab.id) })
             }
 
-            Button {
-                showingMenu = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 11, weight: .medium))
-                    .frame(width: 24, height: AppBarView.height - 4)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help("Nueva tab")
-            .popover(isPresented: $showingMenu, arrowEdge: .bottom) {
-                TabMenuView(model: model) { showingMenu = false }
+            // Sin tabs el home ya ofrece crear: el `+` no repite la función.
+            if !model.tabs.isEmpty {
+                Button {
+                    showingMenu = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 11, weight: .medium))
+                        .frame(width: 24, height: AppBarView.height - 4)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("Nueva tab")
+                .popover(isPresented: $showingMenu, arrowEdge: .bottom) {
+                    TabMenuView(model: model) { showingMenu = false }
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
