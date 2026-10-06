@@ -20,7 +20,11 @@ struct TabMenuView: View {
             }
 
             if !model.availableAgents.isEmpty {
-                Divider().padding(.vertical, 5)
+                // El separador solo cuando hay fila de terminal encima; en el
+                // popover del home queda flotando arriba del título, suelto.
+                if showsTerminalRow {
+                    Divider().padding(.vertical, 5)
+                }
                 MenuSection(title: "Agentes")
                 ForEach(model.availableAgents, id: \.self) { agent in
                     AgentRow(
