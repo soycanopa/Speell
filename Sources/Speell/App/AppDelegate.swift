@@ -101,9 +101,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.setContentSize(NSSize(width: 1000, height: 640 + barHeight))
         split.splitView.setPosition(240, ofDividerAt: 0)
         centerWindowControls(in: window, on: appBar)
-        // El centro del app bar cambia con el alto de la ventana, y macOS puede
-        // recolocar los botones al maquetar de nuevo: se vuelven a centrar en
-        // cada resize.
+        // El centro del app bar cambia con el alto de la ventana: los botones
+        // se vuelven a centrar en cada resize y en cada activación.
         window.delegate = self
         // `center()` usa la pantalla principal del proceso, que con varias
         // pantallas puede no ser la que el usuario tiene delante. Se ancla al
@@ -122,6 +121,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.center()
         }
         window.makeKeyAndOrderFront(nil)
+        // Lanzada fuera de Launch Services —con `nohup`, en desarrollo— la app
+        // arranca inactiva y la ventana no toma el foco. Ghostty activa igual
+        // (su AppDelegate): síncrono en este punto no prende, va en el
+        // siguiente ciclo del runloop.
+        DispatchQueue.main.async {
+            NSApp.activate(ignoringOtherApps: true)
+        }
         self.window = window
         self.split = split
         // El split no admite delegate externo, así que el ancho se publica desde
@@ -195,13 +201,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: Alineación de los botones de ventana
 
     /// macOS coloca los botones de ventana en su propia barra de título —una
-    /// vista de 28 pt cuyas coordenadas no controla Speell—. Alinearlos con el
-    /// app bar exige convertir el centro real de la franja al sistema de
-    /// coordenadas de esa vista: centrar contra una constante los dejaba pegados
-    /// al tope, porque la franja del sistema mide 28 y no `AppBarView.height`.
+    /// vista de 28 pt cuyas coordenadas no controla Speell—. Se centra el frame
+    /// del botón en el centro real del app bar, convertido al sistema de
+    /// coordenadas de esa vista.
+    ///
+    /// En macOS 26 el punto de vidrio se dibuja ~2 pt por encima del centro del
+    /// frame (medido en pantalla: frame por defecto → punto a 16,5; frame
+    /// movido → mismo desfase), así que el frame se corre 2 pt hacia abajo para
+    /// que el punto visible caiga en el centro de la franja.
     private func centerWindowControls(in window: NSWindow, on bar: NSView) {
         guard let content = window.contentView else { return }
-        let barCenter = CGPoint(x: 0, y: bar.frame.midY)
+        let barCenter = CGPoint(x: 0, y: bar.frame.midY - 2)
 
         let buttons = [
             window.standardWindowButton(.closeButton),
