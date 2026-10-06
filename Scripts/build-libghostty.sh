@@ -8,7 +8,10 @@
 #
 # Uso:
 #   Scripts/build-libghostty.sh            # zig si falta, clona el pin, compila
-#   Scripts/build-libghostty.sh --verify   # compara el artefacto con el hash commiteado
+#   Scripts/build-libghostty.sh --verify   # artefacto en disco contra el último build local
+#
+# El hash del artefacto es local (no reproducible entre máquinas): ver
+# docs/decisions/0001-pin-libghostty.md. Lo verificable y commiteado es el pin.
 #
 set -euo pipefail
 

@@ -56,10 +56,10 @@ Scripts/build-libghostty.sh   # zig del pin si falta, clona Ghostty y genera el 
 swift build
 swift test
 swift run Speell
-Scripts/build-libghostty.sh --verify   # compara el artefacto con el hash commiteado
+Scripts/build-libghostty.sh --verify   # artefacto en disco contra el último build local
 ```
 
-El pin (commit de Ghostty + versión de zig) vive en `Vendor/ghostty.pin`; el porqué, en [`docs/decisions/0001-pin-libghostty.md`](docs/decisions/0001-pin-libghostty.md).
+El pin (commit de Ghostty + versión de zig, con el `shasum` del tarball de zig verificado al descargar) vive en `Vendor/ghostty.pin`; el porqué, en [`docs/decisions/0001-pin-libghostty.md`](docs/decisions/0001-pin-libghostty.md). El xcframework y su hash son locales y no se commitean.
 
 ## Estado en disco
 

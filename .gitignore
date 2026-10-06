@@ -9,6 +9,9 @@ zig-out/
 # Vendor: artefactos generados localmente, no commiteados
 Vendor/build/
 Vendor/toolchain/
+# Hash del artefacto: local, no reproducible entre máquinas (zig mete rutas
+# absolutas). Lo reproducible y commiteado es Vendor/ghostty.pin.
+Vendor/GhosttyKit.xcframework.sha256
 
 # SwiftPM
 .build/

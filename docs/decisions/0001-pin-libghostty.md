@@ -44,10 +44,12 @@ Se añade `-Di18n=false`. Sin ese flag, el paso de recursos instala las traducci
 ## Consecuencias
 
 - El pin es un commit de `main`, no un release. Sigue siendo inmutable y `Scripts/build-libghostty.sh` verifica el SHA antes de compilar.
-- Subir el pin es un cambio propio: editar `Vendor/ghostty.pin`, correr el script y commitear el hash nuevo.
+- Subir el pin es un cambio propio: editar `Vendor/ghostty.pin`, correr el script y commitear el pin (commit y versión de zig). El artefacto y su hash no entran al repo.
 - Cuando exista un release de Ghostty con `minimum_zig_version >= 0.16.0`, se mueve el pin a ese tag y se borra este rodeo.
 
 ## Verificación
 
-- `Scripts/build-libghostty.sh` genera `Vendor/GhosttyKit.xcframework` y escribe `Vendor/GhosttyKit.xcframework.sha256`.
-- `Scripts/build-libghostty.sh --verify` compara el artefacto presente con el hash commiteado.
+- `Scripts/build-libghostty.sh` verifica el SHA del commit de Ghostty antes de compilar y el `shasum` del tarball de zig al descargarlo. Eso es lo reproducible y lo que está en el repo.
+- El script escribe además `Vendor/GhosttyKit.xcframework.sha256`, el hash del artefacto **local**. No se commitea: el mismo pin compilado en dos carpetas da hashes distintos (zig mete rutas absolutas en el archivo), así que no sirve como referencia compartida. `Scripts/build-libghostty.sh --verify` lo usa como comprobación local: artefacto en disco contra el último build de esa máquina.
+
+Evidencia: el pin, compilado en `/Volumes/Masa/.../Speell` y en un clon limpio en `/tmp/gt/release-check`, dio `13cf1f2a…` y `ae236fe3…`. Antes de este cambio, correr el build dejaba el árbol sucio con la única diferencia del hash.
