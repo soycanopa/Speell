@@ -98,8 +98,9 @@ enum SpeellPalette {
     }
 
     /// Lo que el divisor del split view suma al hueco visual entre la sidebar
-    /// y la terminal (NSSplitViewController lo fija en 5): es transparente
-    /// pero ocupa sitio. Se descuenta del padding interno de la sidebar para
-    /// que el canal mida lo mismo que los márgenes de la ventana.
-    static let splitDividerAllowance: CGFloat = 5
+    /// y la terminal (NSSplitViewController lo fija en 9 en macOS 26, y ni el
+    /// grosor ni el estilo se dejan sobreescribir): es transparente pero
+    /// ocupa sitio. Se descuenta del padding interno de la sidebar para que
+    /// el canal mida lo mismo que los márgenes de la ventana.
+    static let splitDividerAllowance: CGFloat = 9
 }

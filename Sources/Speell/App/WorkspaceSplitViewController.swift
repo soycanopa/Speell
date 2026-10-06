@@ -37,15 +37,46 @@ final class WorkspaceSplitViewController: NSSplitViewController {
 
     override func splitViewDidResizeSubviews(_ notification: Notification) {
         super.splitViewDidResizeSubviews(notification)
+        // La tapa sigue a la franja del divisor, que se mueve al arrastrar.
+        // El rect se lee de la vista del divisor: el método dedicado del split
+        // view cambió de firma entre SDKs y la vista es estable.
+        dividerCover.frame = dividerStripRect
+        // El sistema recoloca su divisor por encima de la tapa al maquetar;
+        // se vuelve a poner al frente, que es donde pinta.
+        splitView.addSubview(dividerCover, positioned: .above, relativeTo: nil)
         guard let width = contentLeadingOffset else { return }
         onSidebarWidthChanged?(width)
     }
+
+    /// Tapa sobre el divisor del sistema: en macOS 26 pinta un punto agarradero
+    /// en el centro de la franja aunque `dividerColor` vaya en claro. La tapa
+    /// pinta el fondo de la ventana encima y no intercepta el mouse
+    /// (`hitTest` nulo), así el arrastre del divider pasa directo al divisor.
+    private lazy var dividerCover: NSView = {
+        let cover = PassthroughView()
+        cover.wantsLayer = true
+        cover.layer?.backgroundColor = SpeellPalette.windowBackground.cgColor
+        splitView.addSubview(cover)
+        return cover
+    }()
+
+    /// La franja del divisor entre la sidebar y la terminal.
+    private var dividerStripRect: NSRect {
+        splitView.subviews
+            .first { String(describing: type(of: $0)).contains("Divider") }?
+            .frame ?? .zero
+    }
+}
+
+/// Pinta su color pero deja pasar los eventos a las vistas de abajo.
+private final class PassthroughView: NSView {
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
 }
 
 /// El split view del workspace: el del sistema, pero sin pintar la línea del
 /// divisor. La separación entre la sidebar y la terminal es el hueco del fondo
-/// de la ventana (`docs/UI.md`); el rect del divisor sigue existiendo y sigue
-/// siendo el agarre para arrastrar.
+/// de la ventana (`docs/UI.md`); el rect del divisor sigue ahí y es el agarre
+/// para arrastrar.
 final class WorkspaceSplitView: NSSplitView {
     init() {
         super.init(frame: .zero)
