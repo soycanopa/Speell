@@ -56,30 +56,36 @@ struct TabBarView: View {
     @State private var showingMenu = false
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 0) {
-                ForEach(model.tabs) { tab in
-                    TabItem(
-                        tab: tab,
-                        active: tab.id == model.activeTabId,
-                        onSelect: { model.onSelectTab(tab.id) },
-                        onClose: { model.onCloseTab(tab.id) })
-                }
+        HStack(spacing: 0) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 0) {
+                    ForEach(model.tabs) { tab in
+                        TabItem(
+                            tab: tab,
+                            active: tab.id == model.activeTabId,
+                            onSelect: { model.onSelectTab(tab.id) },
+                            onClose: { model.onCloseTab(tab.id) })
+                    }
 
-                Button {
-                    showingMenu = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 11, weight: .medium))
-                        .frame(width: 28, height: 28)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help("Nueva tab")
-                .popover(isPresented: $showingMenu, arrowEdge: .bottom) {
-                    TabMenuView(model: model) { showingMenu = false }
+                    Button {
+                        showingMenu = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 11, weight: .medium))
+                            .frame(width: 28, height: 28)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Nueva tab")
+                    .popover(isPresented: $showingMenu, arrowEdge: .bottom) {
+                        TabMenuView(model: model) { showingMenu = false }
+                    }
                 }
             }
+
+            // Zona reservada a la derecha para los iconos del panel que se van
+            // a desarrollar. Vacía a propósito: no se inventa nada aquí.
+            Spacer(minLength: 0)
         }
         .frame(height: 28)
     }

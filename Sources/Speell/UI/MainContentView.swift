@@ -11,7 +11,6 @@ struct MainContentView: View {
         VStack(spacing: 0) {
             if model.activeProjectId != nil {
                 TabBarView(model: model)
-                Divider()
             }
 
             ZStack {

@@ -39,6 +39,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.title = "Speell"
         window.contentMinSize = NSSize(width: 480, height: 200)
         window.contentViewController = split
+        // Sin barra de título visible: la zona de arriba la ocupa Speell. Los
+        // botones de ventana se quedan donde macOS los pone, sobre la sidebar,
+        // y la barra de tabs arranca a su derecha, al mismo ancho que el
+        // contenido. Va después de `contentViewController` porque asignarlo
+        // reconfigura la ventana y se come estas propiedades.
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.styleMask.insert(.fullSizeContentView)
         // Asignar el contentViewController encoge la ventana al tamaño mínimo
         // que reportan las vistas; el tamaño inicial se fija después.
         window.setContentSize(NSSize(width: 1000, height: 640))

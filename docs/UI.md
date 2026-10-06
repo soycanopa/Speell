@@ -11,9 +11,11 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 
 ## Ventana
 
-- Título: nombre del proyecto activo. Si no hay proyecto, "Speell".
-- Traffic lights estándar. Sidebar colapsable con el botón de toolbar de macOS.
-- Toolbar: nombre del proyecto, botón de nueva tab, y nada más en v1. Ajustes viven en el menú de la app, no en un engranaje flotante.
+- Título: nombre del proyecto activo. Si no hay proyecto, "Speell". Vive en `window.title` para accesibilidad, pero **no se dibuja**: la barra de título está oculta.
+- **Sin barra de título.** La ventana usa `titlebarAppearsTransparent`, `titleVisibility = .hidden` y `fullSizeContentView`, y esas tres líneas van **después** de `contentViewController`, porque asignarlo reconfigura la ventana y se las come.
+- Los botones de ventana se quedan donde macOS los pone, arriba a la izquierda, sobre la sidebar. La barra de tabs arranca a su derecha, al mismo ancho que el contenido.
+- La zona de arriba la ocupa Speell: barra de tabs a la izquierda y, a su derecha, la zona de iconos del panel que se va a desarrollar. Esa zona está reservada y **vacía a propósito**; no se inventan iconos ahí.
+- La barra de tabs pega con el borde superior de la ventana y **no lleva línea debajo**: la terminal llega hasta arriba.
 - Tamaño mínimo pensado para una surface de 80×24 más una sidebar de 220 pt. No se bloquea por debajo si el sistema lo permite; la sidebar colapsa primero.
 
 ## Sidebar
