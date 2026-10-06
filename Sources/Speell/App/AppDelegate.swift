@@ -205,13 +205,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// del botón en el centro real del app bar, convertido al sistema de
     /// coordenadas de esa vista.
     ///
-    /// En macOS 26 el punto de vidrio se dibuja ~2 pt por encima del centro del
-    /// frame (medido en pantalla: frame por defecto → punto a 16,5; frame
-    /// movido → mismo desfase), así que el frame se corre 2 pt hacia abajo para
-    /// que el punto visible caiga en el centro de la franja.
+    /// El punto de vidrio se dibuja ~2 pt por encima del centro del frame, así
+    /// que centrado así cae a ~24 pt del tope: dentro de la banda de 28 del
+    /// sistema —bajarlo más lo recorta— y a 2 pt del centro de la franja.
     private func centerWindowControls(in window: NSWindow, on bar: NSView) {
         guard let content = window.contentView else { return }
-        let barCenter = CGPoint(x: 0, y: bar.frame.midY - 2)
+        let barCenter = CGPoint(x: 0, y: bar.frame.midY)
 
         let buttons = [
             window.standardWindowButton(.closeButton),
