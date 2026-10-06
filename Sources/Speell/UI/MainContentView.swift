@@ -23,7 +23,10 @@ struct MainContentView: View {
                     onNewTerminal: { model.onNewTerminal() })
             }
         }
-        .clipShape(SpeellPalette.corner)
+        // El pane redondea solo abajo: arriba el app bar y la tab activa se
+        // apoyan en ese borde, y una esquina redondeada abriría una cuña de
+        // chrome justo donde la tab se une con la terminal.
+        .clipShape(SpeellPalette.pane)
         .sheet(item: $model.sessionPicker) { request in
             SessionPickerView(model: model, agent: request.agent)
         }

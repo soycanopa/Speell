@@ -33,18 +33,18 @@ struct TabItem: View {
             }
         }
         .padding(.horizontal, 10)
-        // Cuatro puntos menos que el app bar: dos de aire arriba y dos abajo,
-        // para que la tab activa se lea como una forma y no como un bloque
-        // que llena la franja entera.
+        // Cuatro puntos menos que el app bar: dos de aire arriba. Abajo no hay
+        // aire — el fondo de la tab activa baja hasta el borde del app bar.
         .frame(height: AppBarView.height - 4)
-        // Solo la tab activa lleva fondo y forma. La inactiva se apoya en el
-        // fondo de la ventana y se distingue por el texto.
-        .background {
+        // La tab activa nace de la terminal: mismo tono, esquinas redondeadas
+        // solo arriba y borde inferior en el borde mismo del app bar, donde
+        // empieza la terminal — por eso el fondo mide app bar menos 2 y va
+        // pegado arriba del todo. Las inactivas son solo texto sobre la franja.
+        .background(alignment: .top) {
             if active {
-                // El tono de la terminal: la tab activa empalma con la surface
-                // que gobierna, en vez de ser un bloque suelto del chrome.
-                SpeellPalette.surfaceBackground
-                    .clipShape(SpeellPalette.corner)
+                SpeellPalette.attachedTab
+                    .fill(SpeellPalette.surfaceBackground)
+                    .frame(height: AppBarView.height - 2)
             }
         }
         .contentShape(Rectangle())
