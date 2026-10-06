@@ -64,6 +64,9 @@ final class GhosttyHost {
         guard let config = ghostty_config_new() else { return nil }
         ghostty_config_load_default_files(config)
         ghostty_config_load_recursive_files(config)
+        // El fondo que Speell impone va entre la config del usuario y el
+        // finalize: si fuera antes, lo sobrescriben los archivos del usuario.
+        TerminalPalette.apply(to: config, in: TerminalPalette.applicationSupportDirectory)
         ghostty_config_finalize(config)
 
         let count = ghostty_config_diagnostics_count(config)

@@ -41,7 +41,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 ## Surface
 
 - El `NSView` de libghostty llega a los bordes del área de contenido. Sin padding decorativo, sin marco redondo que recorte glifos.
-- El fondo de la terminal es el de libghostty (config del usuario de Ghostty si la librería lo carga; si no, el default del pin). Speell no impone un tema propio en v1.
+- El fondo de la terminal es `#1E1E1E`. El resto del tema sigue siendo el de libghostty y el de la config del usuario; Speell solo impone ese fondo. Se aplica con un override propio (`ghostty.conf` en Application Support) que se carga **después** de la config del usuario y antes de `ghostty_config_finalize`, porque la C API del pin no expone ningún setter de color.
 - Cursor y selección son de libghostty.
 - Cuando la tab está restaurando, un overlay de una línea: "Retomando sesión" o "Abriendo último hilo de esta carpeta". Desaparece al primer frame con contenido. No es un spinner de pantalla completa.
 
