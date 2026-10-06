@@ -10,15 +10,26 @@ struct SidebarView: View {
         // renderiza como un bloque degradado, y sus insets peleaban con el
         // chrome. Con pocas filas, una lista propia da el control y la calma
         // que la spec pide; las filas siguen siendo botones reales.
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                header
-                ForEach(model.projects) { project in
-                    row(project)
+        //
+        // El `GeometryReader` es obligatorio: un `ScrollView` vertical no
+        // propone ancho a su contenido y el `VStack` se abrazaba al texto —
+        // el realce y el `+` quedaban cortos y el hueco derecho crecía con el
+        // ancho de la sidebar.
+        GeometryReader { geo in
+            // Sin indicadores: un `ScrollView` de macOS con scroller visible
+            // reserva ~17 pt de ancho para él aunque no haya nada que
+            // scrollear, y el contenido (realce, `+`) quedaba corto del borde
+            // derecho por exactamente eso.
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    header
+                    ForEach(model.projects) { project in
+                        row(project)
+                    }
                 }
+                .padding(.top, 6)
+                .frame(width: geo.size.width, alignment: .leading)
             }
-            .padding(.top, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         // La sidebar es la misma superficie que la ventana: un rectángulo del
         // mismo color, redondeado, y encima el contenido.
@@ -52,6 +63,9 @@ struct SidebarView: View {
         .padding(.leading, 10)
         .padding(.trailing, 2)
         .padding(.bottom, 6)
+        // Llenar el ancho del VStack: sin esto, el HStack se queda en su ancho
+        // ideal y el `+` no llega al borde derecho.
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// Una fila de proyecto. La activa lleva un realce propio —redondeado,
