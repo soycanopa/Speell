@@ -32,27 +32,38 @@ Decisiones técnicas y cut en [`docs/TRD.md`](docs/TRD.md).
 docs/       PRD, TRD, UX, UI, FLOW, IMPLEMENTACION, decisions/
 Vendor/     ghostty.pin (commit del motor) y el xcframework generado (no commiteado)
 Scripts/    build-libghostty.sh
+Tests/      tests de persistencia
 AGENTS.md   reglas de trabajo del repo
 Sources/Speell/
-  App/       composition root: main, ventana, menú
-  Terminal/  host de libghostty, surface, entrada
-  (pendiente: Domain, Projects, Sessions, Agents, Hooks, Notify, UI)
+  App/        composition root: main, ventana, menú, controller del workspace
+  Domain/     Project, Tab
+  Projects/   alta, baja, orden y path roto
+  Sessions/   tabs por proyecto y su store
+  Terminal/   host de libghostty, pane, surface, entrada
+  UI/         sidebar, barra de tabs, vacíos
+  (pendiente: Agents, Hooks, Notify)
 ```
 
 Del TRD, dirección de dependencia: `App → Projects / Notify → Sessions → Agents`. `Terminal` no importa `Agents`; `Agents` no importa SwiftUI ni AppKit.
 
 ## Build
 
-Requiere Xcode: `xcodebuild -create-xcframework` no existe en CommandLineTools. El artefacto no se commitea por peso; se commitean el pin y su hash.
+Requiere Xcode, no CommandLineTools: de ahí salen `xcodebuild -create-xcframework` y los macros de SwiftUI que usa la sidebar.
 
 ```bash
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer  # o: sudo xcode-select -s /Applications/Xcode.app
 Scripts/build-libghostty.sh   # zig del pin si falta, clona Ghostty y genera el xcframework
-swift build                   # compila la app
-swift run Speell              # spike: una ventana con una surface, shell en $HOME
+swift build
+swift test
+swift run Speell
 Scripts/build-libghostty.sh --verify   # compara el artefacto con el hash commiteado
 ```
 
 El pin (commit de Ghostty + versión de zig) vive en `Vendor/ghostty.pin`; el porqué, en [`docs/decisions/0001-pin-libghostty.md`](docs/decisions/0001-pin-libghostty.md).
+
+## Estado en disco
+
+`~/Library/Application Support/Speell/`: `projects.json` y `tabs.json`. Ver [`docs/decisions/0002-persistencia.md`](docs/decisions/0002-persistencia.md).
 
 ## Documentos
 

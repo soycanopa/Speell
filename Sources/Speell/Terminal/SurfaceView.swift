@@ -7,11 +7,15 @@ final class SurfaceView: NSView, NSTextInputClient {
     private let host: GhosttyHost
     private(set) var surface: ghostty_surface_t?
 
+    /// La invoca libghostty (vía `GhosttyHost`) cuando esta surface debe
+    /// cerrarse, por ejemplo tras la salida del proceso.
+    var onCloseRequest: (() -> Void)?
+
     /// Se llena durante `keyDown` con el texto que produce `interpretKeyEvents`.
     private var keyTextAccumulator: [String]?
     private var markedText = NSMutableAttributedString()
 
-    init(host: GhosttyHost) {
+    init(host: GhosttyHost, cwd: String) {
         self.host = host
         super.init(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
 
@@ -25,11 +29,10 @@ final class SurfaceView: NSView, NSTextInputClient {
         config.scale_factor = Double(NSScreen.main?.backingScaleFactor ?? 2)
         config.context = GHOSTTY_SURFACE_CONTEXT_WINDOW
 
-        // Fase 0: shell de login en $HOME. Sin comando explícito, libghostty
+        // Shell de login en el cwd de la tab. Sin comando explícito, libghostty
         // usa el shell por defecto de la config.
-        let home = NSHomeDirectory()
-        surface = home.withCString { cHome in
-            config.working_directory = cHome
+        surface = cwd.withCString { cCwd in
+            config.working_directory = cCwd
             config.command = nil
             return ghostty_surface_new(app, &config)
         }
@@ -85,7 +88,15 @@ final class SurfaceView: NSView, NSTextInputClient {
         }
         updateContentScale()
         updateSurfaceSize()
-        ghostty_surface_set_occlusion(surface, !(window?.occlusionState.contains(.visible) ?? false))
+        updateOcclusion()
+    }
+
+    /// Oculta la surface del renderer cuando no está a la vista: la tab activa
+    /// es la única visible del pane.
+    func updateOcclusion() {
+        guard let surface else { return }
+        let hidden = isHidden || window == nil || !(window?.occlusionState.contains(.visible) ?? false)
+        ghostty_surface_set_occlusion(surface, hidden)
     }
 
     override func setFrameSize(_ newSize: NSSize) {
