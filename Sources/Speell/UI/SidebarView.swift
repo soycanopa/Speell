@@ -14,8 +14,7 @@ struct SidebarView: View {
                         .tag(project.id)
                         // El estilo sidebar fija el leading de la celda en
                         // ~16 pt y `listRowInsets` no lo mueve; se compensa
-                        // con padding negativo en el contenido. La selección
-                        // sigue siendo la del sistema, a lo ancho de la fila.
+                        // con padding negativo en el contenido.
                         .padding(.horizontal, -8)
                         .contextMenu {
                             Button("Quitar de la sidebar") {
