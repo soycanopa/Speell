@@ -60,4 +60,8 @@ El commit del pin se fija en el spike y no es `latest`.
 
 ## Licencia
 
-Sin decidir todavía.
+Source-available bajo [Functional Source License 1.1, ALv2 Future License](LICENSE) (`FSL-1.1-ALv2`).
+
+Puedes usar, copiar, modificar y redistribuir Speell para cualquier propósito excepto **Competing Use**: ofrecerlo a otros como producto o servicio comercial que sustituya a Speell o dé la misma funcionalidad. Uso interno, educación e investigación no comercial quedan permitidos. Cada versión pasa a **Apache 2.0** a los dos años de publicarse.
+
+No es una licencia Open Source ni OSI-approved. libghostty y demás dependencias conservan su licencia propia (Ghostty es MIT); Speell solo enlaza la librería.
