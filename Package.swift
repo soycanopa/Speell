@@ -13,6 +13,7 @@ let package = Package(
             name: "Speell",
             dependencies: ["GhosttyKit"],
             path: "Sources/Speell",
+            resources: [.copy("Resources/grok.svg")],
             // libghostty es un C API síncrono sobre el hilo principal.
             // Antes de pelear con el modelo de concurrencia estricto, el
             // spike corre en modo de lenguaje 5.

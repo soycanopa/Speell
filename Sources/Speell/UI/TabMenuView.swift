@@ -17,7 +17,7 @@ struct TabMenuView: View {
                 agentSessions(agent)
             }
         }
-        .frame(width: 268)
+        .frame(width: 232)
         .padding(.vertical, 4)
     }
 
@@ -33,7 +33,7 @@ struct TabMenuView: View {
                 MenuSection(title: "Agentes")
                 ForEach(model.availableAgents, id: \.self) { agent in
                     AgentRow(
-                        name: agent.displayName,
+                        agent: agent,
                         onNew: {
                             model.onNewAgentTab(agent, .fresh)
                             dismiss()
@@ -76,19 +76,18 @@ struct TabMenuView: View {
     }
 }
 
-/// Fila de agente: nombre y las tres acciones como iconos.
+/// Fila de agente: icono y nombre, con las tres acciones al lado.
 private struct AgentRow: View {
-    let name: String
+    let agent: AgentKind
     let onNew: () -> Void
     let onLatest: () -> Void
     let onChoose: () -> Void
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 11))
-                .frame(width: 14)
-            Text(name)
+            icon
+                .frame(width: 14, height: 14)
+            Text(agent.displayName)
                 .font(.system(size: 13))
                 .lineLimit(1)
             Spacer(minLength: 10)
@@ -98,6 +97,18 @@ private struct AgentRow: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 3)
+    }
+
+    @ViewBuilder
+    private var icon: some View {
+        if let image = AgentIcon.image(for: agent) {
+            Image(nsImage: image)
+                .resizable()
+                .interpolation(.high)
+        } else {
+            Image(systemName: "sparkles")
+                .font(.system(size: 11))
+        }
     }
 }
 
