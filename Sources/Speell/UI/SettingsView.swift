@@ -160,8 +160,38 @@ private struct AgentsSection: View {
                     Divider().padding(.leading, 14)
                 }
             }
+
+            Divider()
+
+            HStack {
+                Button {
+                    model.onCheckForUpdates()
+                } label: {
+                    HStack(spacing: 6) {
+                        if model.updateWorkInProgress {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text(model.updateWorkInProgress ? "Trabajando…" : "Buscar actualizaciones")
+                            .font(.system(size: 12))
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(10)
+                .background {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.white.opacity(0.06))
+                }
+                .contentShape(Rectangle())
+                .disabled(model.updateWorkInProgress)
+                Spacer()
+            }
+            .padding(10)
         }
-        .onAppear(perform: resolvePaths)
+        .onAppear {
+            resolvePaths()
+            model.onCheckForUpdates()
+        }
     }
 
     private func row(_ kind: AgentKind) -> some View {
@@ -181,13 +211,44 @@ private struct AgentsSection: View {
                     .truncationMode(.middle)
             }
             Spacer(minLength: 12)
+            updateButton(kind)
             Toggle("", isOn: binding(kind))
                 .toggleStyle(.switch)
                 .labelsHidden()
+                .disabled(model.updateWorkInProgress)
                 .help(enabled ? "Deshabilitar agente" : "Habilitar agente")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
+    }
+
+    /// El botón de actualización: solo los CLIs con chequeo documentado (hoy
+    /// grok), y solo cuando el chequeo dice que hay update. Junto al toggle.
+    @ViewBuilder
+    private func updateButton(_ kind: AgentKind) -> some View {
+        if let update = model.updateChecks[kind], update.available {
+            Button {
+                model.onUpdateAgent(kind)
+            } label: {
+                HStack(spacing: 4) {
+                    if model.updateWorkInProgress {
+                        ProgressView().controlSize(.small)
+                    }
+                    Text("Actualizar \(update.current) → \(update.latest)")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.22))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(model.updateWorkInProgress)
+            .help("Instalar la actualización del CLI")
+        }
     }
 
     private func binding(_ kind: AgentKind) -> Binding<Bool> {

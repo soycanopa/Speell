@@ -87,6 +87,12 @@ final class WorkspaceModel: ObservableObject {
     /// Preferencias de notificaciones persistidas (settings → Notificaciones).
     @Published var notificationPreferences = NotificationPreferences()
 
+    /// Chequeos de actualización por agente (solo los CLIs con chequeo
+    /// documentado). Lo llena settings → Agentes.
+    @Published var updateChecks: [AgentKind: AgentUpdate] = [:]
+    /// Chequeo o instalación en curso: el agente ocupado, para deshabilitar.
+    @Published var updateWorkInProgress = false
+
     /// Modo de la app y sección activa de la configuración.
     @Published var appMode: AppMode = .workspace
     @Published var settingsSection: SettingsSection = .apariencia
@@ -113,6 +119,10 @@ final class WorkspaceModel: ObservableObject {
     var onAgentToggle: (AgentKind, Bool) -> Void = { _, _ in }
     /// Cambio de preferencias de notificaciones.
     var onNotificationPreferencesChange: (NotificationPreferences) -> Void = { _ in }
+    /// Buscar actualizaciones de todos los CLIs capaces.
+    var onCheckForUpdates: () -> Void = {}
+    /// Instalar la actualización de un agente.
+    var onUpdateAgent: (AgentKind) -> Void = { _ in }
 
     var activeProject: Project? {
         projects.first { $0.id == activeProjectId }

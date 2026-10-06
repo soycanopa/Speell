@@ -34,10 +34,53 @@ final class WorkspaceController {
         self?.selectTab(id: tabId)
     })
 
+    /// Chequeo de updates: solo los CLIs con chequeo documentado. Los demás
+    /// (opencode2, agy) no ofrecen botón: no hay detección honesta (0004).
+    private let updateCheckers: [AgentKind: AgentUpdateChecking] = [
+        .grok: GrokUpdateChecker(),
+    ]
+
     /// Nombre del archivo de preferencias de agentes en Application Support.
     private static let agentPreferencesFile = "agent-preferences"
     /// Nombre del archivo de preferencias de notificaciones.
     private static let notificationPreferencesFile = "notification-preferences"
+
+    // MARK: Updates
+
+    /// Chequea todos los CLIs capaces, en paralelo, y publica por agente.
+    private func checkForUpdates() {
+        guard !model.updateWorkInProgress else { return }
+        model.updateWorkInProgress = true
+        let checks = updateCheckers
+        Task { @MainActor in
+            var results: [AgentKind: AgentUpdate] = [:]
+            await withTaskGroup(of: (AgentKind, AgentUpdate?).self) { group in
+                for (kind, checker) in checks {
+                    group.addTask { @MainActor in
+                        (kind, await checker.check())
+                    }
+                }
+                for await (kind, update) in group {
+                    if let update { results[kind] = update }
+                }
+            }
+            self.model.updateChecks = results
+            self.model.updateWorkInProgress = false
+        }
+    }
+
+    /// Instala la actualización de un agente y vuelve a chequear.
+    private func updateAgent(_ agent: AgentKind) {
+        guard let checker = updateCheckers[agent], !model.updateWorkInProgress else { return }
+        model.updateWorkInProgress = true
+        Task { @MainActor in
+            let updated = await checker.update()
+            self.model.updateWorkInProgress = false
+            if updated, let checker = self.updateCheckers[agent] {
+                self.model.updateChecks[agent] = await checker.check()
+            }
+        }
+    }
 
     /// Un aviso de una surface: punto en la tab siempre, y notificación
     /// nativa solo si la ventana no está activa y el tipo está encendido
@@ -98,6 +141,8 @@ final class WorkspaceController {
             self.settingsStore.save(preferences, named: Self.notificationPreferencesFile)
             self.model.notificationPreferences = preferences
         }
+        model.onCheckForUpdates = { [weak self] in self?.checkForUpdates() }
+        model.onUpdateAgent = { [weak self] agent in self?.updateAgent(agent) }
         model.onAppearanceChange = { [weak self] hex, fontFamily, fontSize in
             guard let self else { return }
             let directory = TerminalPalette.applicationSupportDirectory
