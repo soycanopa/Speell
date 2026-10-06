@@ -102,10 +102,10 @@ private final class DividerHandleView: NSView {
     /// afuera, y la pill quedaba en 0×0.
     override func setFrameSize(_ newSize: NSSize) {
         super.setFrameSize(newSize)
-        // Pill vertical centrada: 5 de ancho (el ancho del punto del sistema),
-        /// 16 de alto, cápsula.
+        // Pill vertical, a 4 pt del borde derecho de la franja —más pegada a
+        // la sidebar que a la terminal—, cápsula de 5×16.
         pill.frame = CGRect(
-            x: (newSize.width - 5) / 2,
+            x: newSize.width - 4 - 5,
             y: (newSize.height - 16) / 2,
             width: 5,
             height: 16)
