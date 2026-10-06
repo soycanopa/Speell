@@ -38,11 +38,10 @@ struct SidebarView: View {
             .buttonStyle(.plain)
             .padding(10)
         }
-        // Detrás del contenido, para que el texto y las filas no se atenúen. El
-        // `List` pinta su propio fondo, así que se pinta un rectángulo redondeado
-        // opaco del color de la sidebar y encima la capa oscura.
-        .background(SpeellPalette.corner.fill(Color(nsColor: .underPageBackgroundColor)))
-        .background(SpeellPalette.sidebarDim)
+        // La sidebar es la misma superficie que la ventana: un rectángulo del
+        // mismo color, redondeado, y encima el contenido. El `List` pinta su
+        // propio fondo, así que hay que taparlo con este rectángulo opaco.
+        .background(SpeellPalette.corner.fill(SpeellPalette.windowBackgroundColor))
         .clipShape(SpeellPalette.corner)
         // Hueco contra la terminal, por fuera del recorte: los 8 px quedan sin
         // fondo, que es justo la separación que se ve.
