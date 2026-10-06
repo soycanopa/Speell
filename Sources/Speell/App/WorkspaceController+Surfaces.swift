@@ -36,8 +36,8 @@ extension WorkspaceController {
         }
         if tab.resumeQuality == .fresh {
             // Inalcanzable tras la promoción de ensureSurfaces; si llegara, lo
-            // honesto es una sesión nueva.
-            return adapter.launch(cwd: cwd, sessionId: tab.sessionId ?? UUID().uuidString.lowercased())
+            // honesto es una conversación nueva.
+            return adapter.launch(cwd: cwd)
         }
         if let id = tab.sessionId, tab.resumeQuality != .latestInDir {
             return adapter.resume(cwd: cwd, id: id)

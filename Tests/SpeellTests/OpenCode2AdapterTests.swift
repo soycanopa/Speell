@@ -124,10 +124,12 @@ final class OpenCode2AdapterTests: XCTestCase {
 
     // MARK: Comandos
 
-    func testLaunchPinsTheSessionIdWithTheDocumentedFlag() {
-        let command = OpenCode2Adapter().launch(cwd: "/tmp/p", sessionId: "ses_abc")
+    func testLaunchStartsABareConversation() {
+        // El id lo genera opencode2 (siempre `ses…`); Speell no propone nada
+        // (docs/decisions/0005).
+        let command = OpenCode2Adapter().launch(cwd: "/tmp/p")
         XCTAssertEqual(command.executable, "opencode2")
-        XCTAssertEqual(command.arguments, ["--session", "ses_abc"])
+        XCTAssertEqual(command.arguments, [])
         XCTAssertEqual(command.cwd, "/tmp/p")
     }
 
@@ -137,7 +139,6 @@ final class OpenCode2AdapterTests: XCTestCase {
         XCTAssertEqual(adapter.continueLatest(cwd: "/tmp/p").arguments, ["--continue"])
         XCTAssertEqual(adapter.kind, .opencode2)
         XCTAssertEqual(adapter.kind.displayName, "OpenCode 2")
-        XCTAssertEqual(adapter.canPinSessionId, true)
     }
 
     // MARK: Doble

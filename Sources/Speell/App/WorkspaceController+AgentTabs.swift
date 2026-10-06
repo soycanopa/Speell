@@ -40,18 +40,17 @@ extension WorkspaceController {
         let tab: Tab
         switch choice {
         case .fresh:
-            // Speell propone el id cuando el CLI lo acepta: el puntero nace
-            // fiable. Los que no pueden (Agy) nacen sin puntero: al restaurar
-            // pasan a "último de la carpeta" (FLOW F3).
-            let pins = adapter.canPinSessionId
+            // Conversación nueva sin puntero: el id lo genera y guarda el CLI
+            // (docs/decisions/0005). Al restaurar, la tab pasa a "último de la
+            // carpeta" (FLOW F3).
             tab = Tab(
                 projectId: projectId,
                 kind: .agent,
                 cwd: cwd,
                 title: adapter.kind.displayName,
                 agent: adapter.kind,
-                sessionId: pins ? UUID().uuidString.lowercased() : nil,
-                resumeQuality: pins ? .exact : .fresh)
+                sessionId: nil,
+                resumeQuality: .fresh)
         case .latest:
             tab = Tab(
                 projectId: projectId,
@@ -77,8 +76,7 @@ extension WorkspaceController {
             // La sesión nueva corre `launch`, no el rearmado de restore: para
             // Agy `--continue` retomaría el último hilo en vez de abrir uno
             // nuevo (FLOW F2).
-            let sessionId = tab.sessionId ?? UUID().uuidString.lowercased()
-            installSurface(for: tab, command: adapter.launch(cwd: cwd, sessionId: sessionId))
+            installSurface(for: tab, command: adapter.launch(cwd: cwd))
         } else {
             installSurface(for: tab)
         }

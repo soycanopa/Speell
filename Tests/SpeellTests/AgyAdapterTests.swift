@@ -14,12 +14,9 @@ final class AgyAdapterTests: XCTestCase {
         XCTAssertTrue(sessions.isEmpty)
     }
 
-    func testCannotPinTheSessionId() {
-        XCTAssertFalse(AgyAdapter().canPinSessionId)
-    }
-
-    func testLaunchStartsABareConversationIgnoringTheProposedId() {
-        let command = AgyAdapter().launch(cwd: "/tmp/p", sessionId: "lo-que-sea")
+    func testLaunchStartsABareConversation() {
+        // El id lo genera agy; Speell no propone nada (docs/decisions/0005).
+        let command = AgyAdapter().launch(cwd: "/tmp/p")
         XCTAssertEqual(command.executable, "agy")
         XCTAssertEqual(command.arguments, [])
         XCTAssertEqual(command.cwd, "/tmp/p")

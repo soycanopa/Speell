@@ -4,14 +4,12 @@ import Foundation
 /// contra el binario real: `opencode2 --help`, `opencode2 session --help`,
 /// `opencode2 session list --help`, el spec OpenAPI del propio binario
 /// (`opencode2 api GET /openapi.json`) y una corrida real de `session list
-/// --format json`. Ver docs/decisions/0004.
+/// --format json`. Ver docs/decisions/0004 y 0005.
 struct OpenCode2Adapter: AgentAdapter {
     /// Binario. Inyectable para los tests con un doble.
     var executable = "opencode2"
 
     var kind: AgentKind { .opencode2 }
-
-    var canPinSessionId: Bool { true }
 
     /// El listado pasa por el servicio de fondo del CLI. En frío (sin
     /// servicio) tardó ~75 s en arrancar, medido 2026-10-06; en caliente
@@ -33,13 +31,15 @@ struct OpenCode2Adapter: AgentAdapter {
         }
     }
 
-    /// `--session`: "Session ID to continue, or to create if it does not
-    /// exist" (`opencode2 --help`). Un id propuesto por Speell fija la sesión
-    /// nueva, y retomar un hilo es el mismo flag.
-    func launch(cwd: String, sessionId: String) -> Command {
-        Command(executable: executable, arguments: ["--session", sessionId], cwd: cwd)
+    /// Conversación nueva a secas: el id lo genera opencode2, y son siempre
+    /// `ses…` — el CLI rechaza cualquier otro formato con "Expected a string
+    /// starting with ses" (docs/decisions/0005).
+    func launch(cwd: String) -> Command {
+        Command(executable: executable, arguments: [], cwd: cwd)
     }
 
+    /// `--session`: "Session ID to continue, or to create if it does not
+    /// exist" (`opencode2 --help`). Solo se le pasan ids que salió de `list`.
     func resume(cwd: String, id: String) -> Command {
         Command(executable: executable, arguments: ["--session", id], cwd: cwd)
     }

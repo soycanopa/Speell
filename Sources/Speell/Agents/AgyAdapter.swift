@@ -7,8 +7,8 @@ import Foundation
 ///
 /// - `list` es siempre vacío: no hay listado estable. El modal queda en
 ///   "sesión nueva" (FLOW F2).
-/// - `launch` no propone id (`canPinSessionId` es falso): la tab nace
-///   `.fresh`, corre `agy` a secas, y al restaurar pasa a "último de la
+/// - `launch` abre conversación nueva a secas: el id lo genera agy
+///   (docs/decisions/0005). Al restaurar la tab pasa a "último de la
 ///   carpeta" (FLOW F3).
 /// - `resume` usa `--conversation`: "Resume a previous conversation by ID".
 /// - `continueLatest` usa `--continue`: "Continue the most recent conversation".
@@ -18,11 +18,9 @@ struct AgyAdapter: AgentAdapter {
 
     var kind: AgentKind { .agy }
 
-    var canPinSessionId: Bool { false }
-
     func list(cwd: String) async -> [SessionRef] { [] }
 
-    func launch(cwd: String, sessionId: String) -> Command {
+    func launch(cwd: String) -> Command {
         Command(executable: executable, arguments: [], cwd: cwd)
     }
 
