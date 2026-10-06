@@ -37,8 +37,8 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 - Fila de proyecto: nombre (el folder name, no el path completo), path en secundario truncado al medio, badge si alguna tab pide permiso o terminó.
 - Fila activa: selección del sistema (`NSVisualEffect` / selección de lista), no un azul inventado.
 - Sección única, "Proyectos". Sin favoritos ni grupos en v1.
-- Pie: botón de solo icono `+`, tooltip "Añadir proyecto". Sin línea encima: el `Divider` se leía como un borde del botón.
-- Inset de contenido: 8 pt. Las filas lo fijan con `listRowInsets` porque el estilo sidebar las mete ~16 pt —demasiado holgado para un sidebar enmarcado en su propia superficie— y el pie lleva `padding(8)`.
+- Encabezado "Proyectos" con el botón `+` a la derecha del título —como el de Finder—: añadir proyecto es una acción de la sección. El título lleva aire propio contra la primera fila (~6 pt de padding inferior) y usa 11 pt semibold secundario.
+- Inset de contenido: 8 pt. El estilo sidebar mete las filas ~16 pt —demasiado holgado para un sidebar enmarcado en su propia superficie— y `listRowInsets` no lo mueve, así que se compensa con padding horizontal negativo en el contenido de la fila. La selección sigue siendo la del sistema, a lo ancho de la fila.
 
 ## Tabs
 
