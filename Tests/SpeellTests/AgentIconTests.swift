@@ -13,8 +13,14 @@ final class AgentIconTests: XCTestCase {
         XCTAssertTrue(image.isTemplate, "el icono debe teñirse con el color del sistema")
     }
 
-    func testAgentsWithoutTheirOwnArtReturnNothing() {
-        XCTAssertNil(AgentIcon.image(for: .opencode2))
-        XCTAssertNil(AgentIcon.image(for: .agy))
+    /// Los tres agentes tienen arte propio; si a alguno le falta el recurso,
+    /// el menú se degrada sin avisar y esto lo caza.
+    func testEveryAgentHasItsOwnArt() throws {
+        for agent in AgentKind.allCases {
+            let image = try XCTUnwrap(
+                AgentIcon.image(for: agent),
+                "falta el svg de \(agent.displayName) en el bundle")
+            XCTAssertTrue(image.isTemplate, "el icono debe teñirse con el color del sistema")
+        }
     }
 }
