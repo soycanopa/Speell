@@ -30,6 +30,9 @@ struct MainContentView: View {
                 }
             }
         }
+        .sheet(item: $model.sessionPicker) { request in
+            SessionPickerView(model: model, agent: request.agent)
+        }
     }
 }
 

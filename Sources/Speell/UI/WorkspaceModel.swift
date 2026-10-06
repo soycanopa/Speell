@@ -1,18 +1,19 @@
 import Combine
 import Foundation
 
-/// Qué hilo abrir en una tab de agente. Lo elige el menú del `+`.
+/// Qué sesión abrir en una tab de agente. Lo elige el menú del `+`.
 enum AgentTabChoice {
     case fresh
     case latest
     case session(SessionRef)
 }
 
-/// Página del menú del `+`. En la raíz están la terminal y los agentes con sus
-/// acciones; la segunda página es la lista de hilos de un agente.
-enum TabMenuPage: Equatable {
-    case root
-    case sessions(AgentKind)
+/// Petición de modal de sesiones. Se identifica por agente para que SwiftUI
+/// sepa cuándo presentarlo y cuándo cerrarlo.
+struct SessionPickerRequest: Identifiable, Equatable {
+    let agent: AgentKind
+
+    var id: String { agent.rawValue }
 }
 
 /// Estado que consume la UI y las intenciones que emite.
@@ -29,7 +30,8 @@ final class WorkspaceModel: ObservableObject {
 
     /// Agentes que ya tienen adaptador. El menú del `+` muestra estos.
     @Published var availableAgents: [AgentKind] = []
-    @Published var menuPage: TabMenuPage = .root
+    /// No nulo = modal de sesiones abierto para ese agente.
+    @Published var sessionPicker: SessionPickerRequest?
     @Published var agentSessions: [SessionRef] = []
     @Published var loadingSessions = false
 
@@ -38,9 +40,8 @@ final class WorkspaceModel: ObservableObject {
     var onRemoveProject: (UUID) -> Void = { _ in }
     var onNewTerminal: () -> Void = {}
     var onNewAgentTab: (AgentKind, AgentTabChoice) -> Void = { _, _ in }
-    var onLoadAgentSessions: (AgentKind) -> Void = { _ in }
-    var onTabMenuBack: () -> Void = {}
-    var onResetTabMenu: () -> Void = {}
+    var onPickAgentSession: (AgentKind) -> Void = { _ in }
+    var onCancelSessionPicker: () -> Void = {}
     var onSelectTab: (UUID) -> Void = { _ in }
     var onCloseTab: (UUID) -> Void = { _ in }
 

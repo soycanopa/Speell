@@ -33,9 +33,8 @@ final class WorkspaceController {
         model.onRemoveProject = { [weak self] id in self?.removeProject(id: id) }
         model.onNewTerminal = { [weak self] in self?.newShellTab() }
         model.onNewAgentTab = { [weak self] agent, choice in self?.newAgentTab(agent: agent, choice: choice) }
-        model.onLoadAgentSessions = { [weak self] agent in self?.loadAgentSessions(agent: agent) }
-        model.onTabMenuBack = { [weak self] in self?.tabMenuBack() }
-        model.onResetTabMenu = { [weak self] in self?.resetTabMenu() }
+        model.onPickAgentSession = { [weak self] agent in self?.pickAgentSession(agent: agent) }
+        model.onCancelSessionPicker = { [weak self] in self?.cancelSessionPicker() }
         model.onSelectTab = { [weak self] id in self?.selectTab(id: id) }
         model.onCloseTab = { [weak self] id in self?.closeTab(id: id) }
     }
@@ -162,16 +161,16 @@ final class WorkspaceController {
     private func newAgentTab(agent: AgentKind, choice: AgentTabChoice) {
         guard let project = model.activeProject, let adapter = adapters[agent] else { return }
         addAgentTab(projectId: project.id, adapter: adapter, choice: choice)
-        resetTabMenu()
+        cancelSessionPicker()
     }
 
-    /// La lista de hilos se pide al abrir "Elegir hilo…", no en cada `+`.
-    /// Corre fuera del hilo principal; el popover muestra "Buscando hilos…".
-    private func loadAgentSessions(agent: AgentKind) {
+    /// Abre el modal de sesiones y pide la lista al CLI. La lista se pide solo
+    /// aquí, no en cada `+`; el modal muestra "Buscando sesiones…" hasta que llega.
+    private func pickAgentSession(agent: AgentKind) {
         guard let project = model.activeProject, let adapter = adapters[agent] else { return }
-        model.menuPage = .sessions(agent)
         model.agentSessions = []
         model.loadingSessions = true
+        model.sessionPicker = SessionPickerRequest(agent: agent)
 
         let cwd = project.path
         Task { @MainActor in
@@ -181,17 +180,8 @@ final class WorkspaceController {
         }
     }
 
-    private func tabMenuBack() {
-        switch model.menuPage {
-        case .root:
-            break
-        case .sessions:
-            resetTabMenu()
-        }
-    }
-
-    private func resetTabMenu() {
-        model.menuPage = .root
+    private func cancelSessionPicker() {
+        model.sessionPicker = nil
         model.agentSessions = []
         model.loadingSessions = false
     }

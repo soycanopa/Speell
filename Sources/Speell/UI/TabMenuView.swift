@@ -1,27 +1,13 @@
 import SwiftUI
 
 /// Menú del `+`: terminal y una fila por agente con sus acciones como iconos.
-/// Vive en un popover anclado al botón y no abre ningún modal: la lista de
-/// hilos se resuelve dentro del mismo popover.
+/// Vive en un popover anclado al botón; elegir sesión abre un modal aparte.
 struct TabMenuView: View {
     @ObservedObject var model: WorkspaceModel
     /// Cierra el popover cuando ya se eligió algo.
     var dismiss: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            switch model.menuPage {
-            case .root:
-                root
-            case .sessions(let agent):
-                agentSessions(agent)
-            }
-        }
-        .frame(width: 232)
-        .padding(.vertical, 4)
-    }
-
-    private var root: some View {
         VStack(alignment: .leading, spacing: 0) {
             MenuRow(title: "Nueva terminal", systemImage: "terminal") {
                 model.onNewTerminal()
@@ -42,37 +28,15 @@ struct TabMenuView: View {
                             model.onNewAgentTab(agent, .latest)
                             dismiss()
                         },
-                        onChoose: { model.onLoadAgentSessions(agent) })
+                        onChoose: {
+                            dismiss()
+                            model.onPickAgentSession(agent)
+                        })
                 }
             }
         }
-    }
-
-    private func agentSessions(_ agent: AgentKind) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            MenuRow(title: "Nueva tab", systemImage: "chevron.left") {
-                model.onTabMenuBack()
-            }
-            Divider().padding(.vertical, 5)
-            MenuSection(title: agent.displayName)
-
-            if model.loadingSessions {
-                MenuNote("Buscando hilos…")
-            } else if model.agentSessions.isEmpty {
-                MenuNote("No hay hilos de \(agent.displayName) en esta carpeta.")
-            } else {
-                ForEach(model.agentSessions, id: \.id) { reference in
-                    MenuRow(
-                        title: reference.title,
-                        systemImage: nil,
-                        subtitle: String(reference.id.prefix(8))
-                    ) {
-                        model.onNewAgentTab(agent, .session(reference))
-                        dismiss()
-                    }
-                }
-            }
-        }
+        .frame(width: 232)
+        .padding(.vertical, 4)
     }
 }
 
@@ -91,9 +55,9 @@ private struct AgentRow: View {
                 .font(.system(size: 13))
                 .lineLimit(1)
             Spacer(minLength: 10)
-            IconButton(systemImage: "plus.circle", help: "Hilo nuevo", action: onNew)
-            IconButton(systemImage: "clock.arrow.circlepath", help: "Último de esta carpeta", action: onLatest)
-            IconButton(systemImage: "list.bullet", help: "Elegir hilo…", action: onChoose)
+            IconButton(systemImage: "plus.circle", help: "Sesión nueva", action: onNew)
+            IconButton(systemImage: "clock.arrow.circlepath", help: "Última sesión de esta carpeta", action: onLatest)
+            IconButton(systemImage: "list.bullet", help: "Elegir sesión…", action: onChoose)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 3)
@@ -146,27 +110,9 @@ private struct MenuSection: View {
     }
 }
 
-private struct MenuNote: View {
-    let text: String
-
-    init(_ text: String) {
-        self.text = text
-    }
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: 12))
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 2)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
 private struct MenuRow: View {
     let title: String
     var systemImage: String?
-    var subtitle: String?
     let action: () -> Void
 
     @State private var hovering = false
@@ -182,12 +128,6 @@ private struct MenuRow: View {
                 Text(title)
                     .font(.system(size: 13))
                     .lineLimit(1)
-                if let subtitle {
-                    Spacer(minLength: 8)
-                    Text(subtitle)
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
-                }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
