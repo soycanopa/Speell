@@ -38,6 +38,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.title = "Speell"
         window.contentMinSize = NSSize(width: 480, height: 200)
         window.contentViewController = split
+        // Asignar el contentViewController encoge la ventana al tamaño mínimo
+        // que reportan las vistas; el tamaño inicial se fija después.
+        window.setContentSize(NSSize(width: 1000, height: 640))
+        split.splitView.setPosition(240, ofDividerAt: 0)
         window.center()
         window.makeKeyAndOrderFront(nil)
         self.window = window
