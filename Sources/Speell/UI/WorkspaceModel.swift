@@ -8,6 +8,14 @@ enum AgentTabChoice {
     case session(SessionRef)
 }
 
+/// Página del menú del `+`. Es un desplegable: primero los tipos de tab, y
+/// desde un agente sus opciones, y desde ahí sus hilos.
+enum TabMenuPage: Equatable {
+    case root
+    case agent(AgentKind)
+    case sessions(AgentKind)
+}
+
 /// Estado que consume la UI y las intenciones que emite.
 /// La vista no conoce stores, ni libghostty, ni arma comandos.
 /// Las intenciones se emiten desde el hilo principal (botones y menús).
@@ -22,8 +30,7 @@ final class WorkspaceModel: ObservableObject {
 
     /// Agentes que ya tienen adaptador. El menú del `+` muestra estos.
     @Published var availableAgents: [AgentKind] = []
-    /// Agente cuya lista de hilos se está mostrando dentro del menú del `+`.
-    @Published var sessionListAgent: AgentKind?
+    @Published var menuPage: TabMenuPage = .root
     @Published var agentSessions: [SessionRef] = []
     @Published var loadingSessions = false
 
@@ -32,8 +39,10 @@ final class WorkspaceModel: ObservableObject {
     var onRemoveProject: (UUID) -> Void = { _ in }
     var onNewTerminal: () -> Void = {}
     var onNewAgentTab: (AgentKind, AgentTabChoice) -> Void = { _, _ in }
+    var onOpenAgentMenu: (AgentKind) -> Void = { _ in }
     var onLoadAgentSessions: (AgentKind) -> Void = { _ in }
-    var onCloseAgentSessions: () -> Void = {}
+    var onTabMenuBack: () -> Void = {}
+    var onResetTabMenu: () -> Void = {}
     var onSelectTab: (UUID) -> Void = { _ in }
     var onCloseTab: (UUID) -> Void = { _ in }
 

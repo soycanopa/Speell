@@ -67,6 +67,7 @@ struct TabBarView: View {
                 }
 
                 Button {
+                    model.onResetTabMenu()
                     showingMenu = true
                 } label: {
                     Image(systemName: "plus")

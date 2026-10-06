@@ -33,8 +33,10 @@ final class WorkspaceController {
         model.onRemoveProject = { [weak self] id in self?.removeProject(id: id) }
         model.onNewTerminal = { [weak self] in self?.newShellTab() }
         model.onNewAgentTab = { [weak self] agent, choice in self?.newAgentTab(agent: agent, choice: choice) }
+        model.onOpenAgentMenu = { [weak self] agent in self?.model.menuPage = .agent(agent) }
         model.onLoadAgentSessions = { [weak self] agent in self?.loadAgentSessions(agent: agent) }
-        model.onCloseAgentSessions = { [weak self] in self?.closeAgentSessions() }
+        model.onTabMenuBack = { [weak self] in self?.tabMenuBack() }
+        model.onResetTabMenu = { [weak self] in self?.resetTabMenu() }
         model.onSelectTab = { [weak self] id in self?.selectTab(id: id) }
         model.onCloseTab = { [weak self] id in self?.closeTab(id: id) }
     }
@@ -161,14 +163,14 @@ final class WorkspaceController {
     private func newAgentTab(agent: AgentKind, choice: AgentTabChoice) {
         guard let project = model.activeProject, let adapter = adapters[agent] else { return }
         addAgentTab(projectId: project.id, adapter: adapter, choice: choice)
-        closeAgentSessions()
+        resetTabMenu()
     }
 
     /// La lista de hilos se pide al abrir "Elegir hilo…", no en cada `+`.
     /// Corre fuera del hilo principal; el popover muestra "Buscando hilos…".
     private func loadAgentSessions(agent: AgentKind) {
         guard let project = model.activeProject, let adapter = adapters[agent] else { return }
-        model.sessionListAgent = agent
+        model.menuPage = .sessions(agent)
         model.agentSessions = []
         model.loadingSessions = true
 
@@ -180,8 +182,21 @@ final class WorkspaceController {
         }
     }
 
-    private func closeAgentSessions() {
-        model.sessionListAgent = nil
+    private func tabMenuBack() {
+        switch model.menuPage {
+        case .root:
+            break
+        case .agent:
+            model.menuPage = .root
+        case .sessions(let agent):
+            model.menuPage = .agent(agent)
+            model.agentSessions = []
+            model.loadingSessions = false
+        }
+    }
+
+    private func resetTabMenu() {
+        model.menuPage = .root
         model.agentSessions = []
         model.loadingSessions = false
     }
