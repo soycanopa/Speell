@@ -5,6 +5,9 @@ import SwiftUI
 struct SidebarView: View {
     @ObservedObject var model: WorkspaceModel
 
+    /// El `+` del encabezado aparece solo con el cursor sobre la franja.
+    @State private var hoveringHeader = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Sin `List`: la selección del estilo sidebar de sistema es un
@@ -83,22 +86,27 @@ struct SidebarView: View {
 
     /// Encabezado de la sección. El `+` vive aquí, a la derecha del título
     /// —como el de Finder—: añadir proyecto es una acción de la sección.
+    /// Solo aparece con el cursor en la franja; el título no se mueve porque
+    /// el `Spacer` absorbe el espacio del botón.
     private var header: some View {
         HStack {
             Text("Proyectos")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
             Spacer()
-            Button {
-                model.onAddProject()
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .medium))
-                    .frame(width: 24, height: 24)
-                    .contentShape(Rectangle())
+            if hoveringHeader {
+                Button {
+                    model.onAddProject()
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 12, weight: .medium))
+                        .frame(width: 24, height: 24)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("Añadir proyecto")
+                .transition(.opacity)
             }
-            .buttonStyle(.plain)
-            .help("Añadir proyecto")
         }
         .padding(.leading, 10)
         .padding(.trailing, 2)
@@ -106,6 +114,9 @@ struct SidebarView: View {
         // Llenar el ancho del VStack: sin esto, el HStack se queda en su ancho
         // ideal y el `+` no llega al borde derecho.
         .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .onHover { hoveringHeader = $0 }
+        .animation(.easeInOut(duration: 0.15), value: hoveringHeader)
     }
 
     private var settingsHeader: some View {
