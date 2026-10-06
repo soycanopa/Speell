@@ -9,6 +9,13 @@ import AppKit
 /// ("A SplitView managed by a SplitViewController cannot have its delegate
 /// modified"), así que hay que engancharse desde dentro.
 final class WorkspaceSplitViewController: NSSplitViewController {
+    /// El header de `NSSplitViewController` lo documenta: para dar un split
+    /// view propio se asigna `splitView` antes de que la vista cargue.
+    override func loadView() {
+        splitView = WorkspaceSplitView()
+        super.loadView()
+    }
+
     /// El item de la sidebar. Se asigna a mano porque el ancho se lee de aquí.
     ///
     /// No se puede deducir por índice: `splitView.subviews.first` no está
@@ -33,4 +40,21 @@ final class WorkspaceSplitViewController: NSSplitViewController {
         guard let width = contentLeadingOffset else { return }
         onSidebarWidthChanged?(width)
     }
+}
+
+/// El split view del workspace: el del sistema, pero sin pintar la línea del
+/// divisor. La separación entre la sidebar y la terminal es el hueco del fondo
+/// de la ventana (`docs/UI.md`); el rect del divisor sigue existiendo y sigue
+/// siendo el agarre para arrastrar.
+final class WorkspaceSplitView: NSSplitView {
+    init() {
+        super.init(frame: .zero)
+        isVertical = true
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("WorkspaceSplitView no se crea desde un coder")
+    }
+
+    override var dividerColor: NSColor { .clear }
 }
