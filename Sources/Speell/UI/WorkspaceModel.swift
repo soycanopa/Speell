@@ -27,6 +27,15 @@ final class WorkspaceModel: ObservableObject {
     @Published var tabs: [Tab] = []
     @Published var activeProjectId: UUID?
     @Published var activeTabId: UUID?
+    /// Distancia desde el borde izquierdo del app bar hasta donde empieza la
+    /// terminal. Lo publica el composition root cuando cambia el divider, para
+    /// que el app bar pueda alinear los tabs con el borde de la terminal sin
+    /// conocer el split.
+    ///
+    /// No es el ancho de la sidebar: es su borde derecho más el divisor del
+    /// split. Los botones de ventana no se suman porque solo ocupan la parte
+    /// de la franja que cae sobre la sidebar.
+    @Published var contentLeadingOffset: CGFloat = 241
 
     /// Agentes que ya tienen adaptador. El menú del `+` muestra estos.
     @Published var availableAgents: [AgentKind] = []

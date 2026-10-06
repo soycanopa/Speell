@@ -207,27 +207,12 @@ final class SurfaceView: NSView, NSTextInputClient {
 
     // MARK: Mouse
 
-    override func mouseDown(with event: NSEvent) {
-        guard let surface else { return }
-        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_PRESS, GHOSTTY_MOUSE_LEFT, event.ghosttyMods)
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        guard let surface else { return }
-        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_RELEASE, GHOSTTY_MOUSE_LEFT, event.ghosttyMods)
-    }
-
-    override func rightMouseDown(with event: NSEvent) {
-        guard let surface else { return }
-        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_PRESS, GHOSTTY_MOUSE_RIGHT, event.ghosttyMods)
-    }
-
-    override func rightMouseUp(with event: NSEvent) {
-        guard let surface else { return }
-        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_RELEASE, GHOSTTY_MOUSE_RIGHT, event.ghosttyMods)
-    }
-
-    override func mouseMoved(with event: NSEvent) {
+    /// Actualiza la posición del mouse en la surface. libghostty ancla la
+    /// selección en la última posición conocida: si un click llega con la
+    /// posición desactualizada, al soltar selecciona desde ese punto viejo
+    /// hasta el click. Por eso la posición viaja también con los eventos de
+    /// botón, no solo con el movimiento.
+    private func sendMousePos(_ event: NSEvent) {
         guard let surface else { return }
         let point = convert(event.locationInWindow, from: nil)
         ghostty_surface_mouse_pos(
@@ -235,6 +220,47 @@ final class SurfaceView: NSView, NSTextInputClient {
             Double(point.x),
             Double(bounds.height - point.y),
             event.ghosttyMods)
+    }
+
+    /// Sin un tracking area, AppKit no entrega `mouseMoved` y la surface no se
+    /// entera del mouse hasta que hay botón apretado. Ghostty registra el
+    /// mismo tracking (SurfaceView_AppKit:849).
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach { removeTrackingArea($0) }
+        addTrackingArea(NSTrackingArea(
+            rect: bounds,
+            options: [.mouseMoved, .activeAlways, .inVisibleRect],
+            owner: self,
+            userInfo: nil))
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard let surface else { return }
+        sendMousePos(event)
+        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_PRESS, GHOSTTY_MOUSE_LEFT, event.ghosttyMods)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        guard let surface else { return }
+        sendMousePos(event)
+        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_RELEASE, GHOSTTY_MOUSE_LEFT, event.ghosttyMods)
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        guard let surface else { return }
+        sendMousePos(event)
+        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_PRESS, GHOSTTY_MOUSE_RIGHT, event.ghosttyMods)
+    }
+
+    override func rightMouseUp(with event: NSEvent) {
+        guard let surface else { return }
+        sendMousePos(event)
+        _ = ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_RELEASE, GHOSTTY_MOUSE_RIGHT, event.ghosttyMods)
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        sendMousePos(event)
     }
 
     override func mouseDragged(with event: NSEvent) {

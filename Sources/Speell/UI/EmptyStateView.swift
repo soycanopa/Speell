@@ -21,6 +21,8 @@ struct EmptyStateView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .windowBackgroundColor))
+        // El mismo tono que la terminal: el vacío ocupa el lugar de la surface
+        // y no se tiene que notar el cambio cuando aparece o desaparece.
+        .background(SpeellPalette.surfaceBackground)
     }
 }
