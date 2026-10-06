@@ -17,8 +17,9 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // El panel es chrome, no surface de terminal: el tono de la ventana.
-        .background(SpeellPalette.windowBackgroundColor)
+        // El área de settings es la misma superficie que la terminal: mismo
+        // fondo vigente, para que el pane no cambie de tono al entrar.
+        .background(SpeellPalette.color(fromHex: model.terminalBackgroundHex))
     }
 
     @ViewBuilder
