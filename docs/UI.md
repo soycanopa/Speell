@@ -19,7 +19,8 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 ## Sidebar
 
 - Ancho inicial 240 pt. Redimensionable, mínimo 180, máximo 320.
-- Fondo: material difuminado (`ultraThin`) más una capa negra al 8%, en `UI/SpeellPalette.swift`. La capa va **detrás** del contenido, no encima, para no atenuar el texto. Requiere que la ventana no sea opaca, si no el material se ve como un gris plano.
+- Fondo: una capa negra al 8% sobre el fondo de la ventana, en `UI/SpeellPalette.swift`. Va **detrás** del contenido, no encima, para no atenuar el texto.
+- Blur de la sidebar: **pendiente, fuera de v1.** Con la ventana opaca un material no tiene nada que difuminar, así que no se aplica. Si vuelve, necesita que la ventana deje ver el escritorio, y entonces el resto del chrome tiene que pintar su propio fondo.
 - Fila de proyecto: nombre (el folder name, no el path completo), path en secundario truncado al medio, badge si alguna tab pide permiso o terminó.
 - Fila activa: selección del sistema (`NSVisualEffect` / selección de lista), no un azul inventado.
 - Sección única, "Proyectos". Sin favoritos ni grupos en v1.
