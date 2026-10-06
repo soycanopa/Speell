@@ -37,13 +37,14 @@ final class WorkspaceSplitViewController: NSSplitViewController {
 
     override func splitViewDidResizeSubviews(_ notification: Notification) {
         super.splitViewDidResizeSubviews(notification)
-        // La tapa sigue a la franja del divisor, que se mueve al arrastrar.
-        // El rect se lee de la vista del divisor: el método dedicado del split
-        // view cambió de firma entre SDKs y la vista es estable.
-        dividerCover.frame = dividerStripRect
-        // El sistema recoloca su divisor por encima de la tapa al maquetar;
-        // se vuelve a poner al frente, que es donde pinta.
-        splitView.addSubview(dividerCover, positioned: .above, relativeTo: nil)
+        // La tapa vive en el contenedor, por encima del split view entero:
+        // dentro del split view el sistema recoloca su divisor por encima de
+        // cualquier subview y la tapa quedaba siempre debajo.
+        if dividerCover.superview !== splitView.superview {
+            splitView.superview?.addSubview(dividerCover, positioned: .above, relativeTo: splitView)
+        }
+        dividerCover.frame = splitView.convert(dividerStripRect, to: dividerCover.superview)
+        dividerCover.updateTrackingAreas()
         guard let width = contentLeadingOffset else { return }
         onSidebarWidthChanged?(width)
     }
@@ -58,18 +59,24 @@ final class WorkspaceSplitViewController: NSSplitViewController {
         return cover
     }()
 
-    /// La franja del divisor entre la sidebar y la terminal.
+    /// La franja del divisor entre la sidebar y la terminal. La tapa también
+    /// lleva "Divider" en su nombre: hay que excluirla o se posiciona a sí
+    /// misma (nace con frame 0 y se quedaría en 0 para siempre).
     private var dividerStripRect: NSRect {
         splitView.subviews
-            .first { String(describing: type(of: $0)).contains("Divider") }?
+            .first { sub in
+                let name = String(describing: type(of: sub))
+                return name.contains("Divider") && !(sub is DividerHandleView)
+            }?
             .frame ?? .zero
     }
 }
 
 /// La franja del divisor: pinta el fondo de la ventana encima del punto
 /// agarradero que el sistema dibuja en el centro, y al hacer hover muestra un
-/// handle en forma de pill vertical. No intercepta el mouse (`hitTest` nulo):
-/// el arrastre del divider pasa directo al divisor de abajo.
+/// handle en forma de pill vertical —del ancho del punto del sistema, un poco
+/// más alta. No intercepta el mouse (`hitTest` nulo): el arrastre del divider
+/// pasa directo al divisor de abajo.
 private final class DividerHandleView: NSView {
     private let pill = CALayer()
     private var hovering = false {
@@ -80,8 +87,8 @@ private final class DividerHandleView: NSView {
         super.init(frame: frameRect)
         wantsLayer = true
         layer?.backgroundColor = SpeellPalette.windowBackground.cgColor
-        pill.cornerRadius = 2
-        pill.backgroundColor = NSColor.white.withAlphaComponent(0.28).cgColor
+        pill.cornerRadius = 2.5
+        pill.backgroundColor = NSColor.white.withAlphaComponent(0.35).cgColor
         pill.opacity = 0
         layer?.addSublayer(pill)
     }
@@ -90,15 +97,18 @@ private final class DividerHandleView: NSView {
         fatalError("DividerHandleView no se crea desde un coder")
     }
 
-    override func layout() {
-        super.layout()
-        // Pill vertical centrada en la franja; con el arrastre la vista se
-        // mueve y la pill viaja con ella.
+    /// El frame de la pill se ajusta aquí y no en `layout()`: AppKit no pasa
+    /// por `layout()` en una vista a la que solo se le setea el frame desde
+    /// afuera, y la pill quedaba en 0×0.
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        // Pill vertical centrada: 5 de ancho (el ancho del punto del sistema),
+        /// 16 de alto, cápsula.
         pill.frame = CGRect(
-            x: (bounds.width - 4) / 2,
-            y: (bounds.height - 36) / 2,
-            width: 4,
-            height: 36)
+            x: (newSize.width - 5) / 2,
+            y: (newSize.height - 16) / 2,
+            width: 5,
+            height: 16)
     }
 
     override func updateTrackingAreas() {
@@ -106,7 +116,9 @@ private final class DividerHandleView: NSView {
         trackingAreas.forEach { removeTrackingArea($0) }
         addTrackingArea(NSTrackingArea(
             rect: bounds,
-            options: [.mouseEnteredAndExited, .activeAlways],
+            // `.mouseMoved` además de `.mouseEnteredAndExited`: sin él, el
+            // enter no llegaba (medido en macOS 26).
+            options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways],
             owner: self,
             userInfo: nil))
     }
