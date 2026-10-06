@@ -9,6 +9,9 @@ struct GrokAdapter: AgentAdapter {
 
     var kind: AgentKind { .grok }
 
+    /// `--session-id` crea la conversación con el id propuesto (docs/decisions/0003).
+    var canPinSessionId: Bool { true }
+
     func list(cwd: String) async -> [SessionRef] {
         let executable = self.executable
         return await withCheckedContinuation { continuation in

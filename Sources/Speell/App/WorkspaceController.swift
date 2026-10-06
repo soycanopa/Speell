@@ -12,9 +12,10 @@ final class WorkspaceController {
     private let projects = ProjectStore()
     private let sessions = SessionStore()
 
-    /// Un adaptador por agente. La fase 3 suma OpenCode 2 y Agy.
+    /// Un adaptador por agente, el contrato de docs/decisions/0003 y 0004.
     private let adapters: [AgentKind: AgentAdapter] = [
         .grok: GrokAdapter(),
+        .opencode2: OpenCode2Adapter(),
     ]
 
     /// Última tab activa de cada proyecto. Solo en memoria.
@@ -214,16 +215,18 @@ final class WorkspaceController {
         let tab: Tab
         switch choice {
         case .fresh:
-            // Speell propone el id y el CLI lo respeta: el puntero nace fiable.
-            let sessionId = UUID().uuidString.lowercased()
+            // Speell propone el id cuando el CLI lo acepta: el puntero nace
+            // fiable. Los que no pueden (Agy) nacen sin puntero: al restaurar
+            // pasan a "último de la carpeta" (FLOW F3).
+            let pins = adapter.canPinSessionId
             tab = Tab(
                 projectId: projectId,
                 kind: .agent,
                 cwd: cwd,
                 title: adapter.kind.displayName,
                 agent: adapter.kind,
-                sessionId: sessionId,
-                resumeQuality: .exact)
+                sessionId: pins ? UUID().uuidString.lowercased() : nil,
+                resumeQuality: pins ? .exact : .fresh)
         case .latest:
             tab = Tab(
                 projectId: projectId,
@@ -245,7 +248,15 @@ final class WorkspaceController {
         }
 
         sessions.add(tab)
-        installSurface(for: tab)
+        if tab.resumeQuality == .fresh {
+            // La sesión nueva corre `launch`, no el rearmado de restore: para
+            // Agy `--continue` retomaría el último hilo en vez de abrir uno
+            // nuevo (FLOW F2).
+            let sessionId = tab.sessionId ?? UUID().uuidString.lowercased()
+            installSurface(for: tab, command: adapter.launch(cwd: cwd, sessionId: sessionId))
+        } else {
+            installSurface(for: tab)
+        }
         show(tabId: tab.id)
         projects.touch(id: projectId)
         refresh()
@@ -284,12 +295,24 @@ final class WorkspaceController {
 
     private func ensureSurfaces(projectId: UUID) {
         for tab in sessions.tabs(of: projectId) where pane.surfaceView(forTab: tab.id) == nil {
+            // Restaurar una tab de agente nueva sin puntero ya no puede
+            // recrear su hilo: el proceso murió con la app. Lo que queda es el
+            // último de la carpeta, y la etiqueta de la tab lo dice (FLOW F3).
+            if tab.kind == .agent, tab.resumeQuality == .fresh {
+                var restored = tab
+                restored.resumeQuality = .latestInDir
+                sessions.update(restored)
+            }
             installSurface(for: tab)
         }
     }
 
     private func installSurface(for tab: Tab) {
-        let view = SurfaceView(host: host, command: command(for: tab))
+        installSurface(for: tab, command: command(for: tab))
+    }
+
+    private func installSurface(for tab: Tab, command: Command) {
+        let view = SurfaceView(host: host, command: command)
         view.onCloseRequest = { [weak self] in self?.closeTab(id: tab.id) }
         pane.install(view, forTab: tab.id)
     }
@@ -300,6 +323,11 @@ final class WorkspaceController {
         let cwd = resolvedCwd(for: tab)
         guard tab.kind == .agent, let agent = tab.agent, let adapter = adapters[agent] else {
             return .shell(in: cwd)
+        }
+        if tab.resumeQuality == .fresh {
+            // Inalcanzable tras la promoción de ensureSurfaces; si llegara, lo
+            // honesto es una sesión nueva.
+            return adapter.launch(cwd: cwd, sessionId: tab.sessionId ?? UUID().uuidString.lowercased())
         }
         if let id = tab.sessionId, tab.resumeQuality != .latestInDir {
             return adapter.resume(cwd: cwd, id: id)
