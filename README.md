@@ -35,13 +35,14 @@ Scripts/    build-libghostty.sh
 Tests/      tests de persistencia
 AGENTS.md   reglas de trabajo del repo
 Sources/Speell/
-  App/        composition root: main, ventana, menú, controller del workspace
-  Domain/     Project, Tab
+  App/        composition root: entrada, ventana, menú, controller del workspace
+  Domain/     Project, Tab, Command, SessionRef
   Projects/   alta, baja, orden y path roto
   Sessions/   tabs por proyecto y su store
+  Agents/     protocolo AgentAdapter + un adaptador por CLI
   Terminal/   host de libghostty, pane, surface, entrada
-  UI/         sidebar, barra de tabs, vacíos
-  (pendiente: Agents, Hooks, Notify)
+  UI/         sidebar, barra de tabs, vacíos, diálogos
+  (pendiente: Hooks, Notify)
 ```
 
 Del TRD, dirección de dependencia: `App → Projects / Notify → Sessions → Agents`. `Terminal` no importa `Agents`; `Agents` no importa SwiftUI ni AppKit.

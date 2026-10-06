@@ -1,7 +1,9 @@
 import AppKit
 
-/// Composition root del workspace: une stores, tabs y surfaces de libghostty.
-/// La UI solo ve `WorkspaceModel`; ningún store arma comandos ni conoce la vista.
+/// Composition root del workspace: une stores, adaptadores, tabs y surfaces de
+/// libghostty. La UI solo ve `WorkspaceModel`; ninguna vista arma un comando.
+/// Todo pasa en el hilo principal: los diálogos y las surfaces lo exigen.
+@MainActor
 final class WorkspaceController {
     let model = WorkspaceModel()
 
@@ -9,6 +11,11 @@ final class WorkspaceController {
     private let pane: TerminalPane
     private let projects = ProjectStore()
     private let sessions = SessionStore()
+
+    /// Un adaptador por agente. La fase 3 suma OpenCode 2 y Agy.
+    private let adapters: [AgentKind: AgentAdapter] = [
+        .grok: GrokAdapter(),
+    ]
 
     /// Última tab activa de cada proyecto. Solo en memoria.
     private var lastTabByProject: [UUID: UUID] = [:]
@@ -24,14 +31,16 @@ final class WorkspaceController {
         model.onSelectProject = { [weak self] id in self?.selectProject(id: id) }
         model.onRemoveProject = { [weak self] id in self?.removeProject(id: id) }
         model.onNewTab = { [weak self] in self?.newTab() }
+        model.onNewTerminal = { [weak self] in self?.newShellTab() }
         model.onSelectTab = { [weak self] id in self?.selectTab(id: id) }
         model.onCloseTab = { [weak self] id in self?.closeTab(id: id) }
     }
 
     // MARK: Arranque y cierre
 
-    /// Restaura el último proyecto activo con sus tabs. Las tabs de los demás
-    /// proyectos no lanzan proceso hasta que se selecciona el proyecto.
+    /// Restaura el último proyecto activo con sus tabs, rearmando el comando de
+    /// cada una desde su puntero. Las tabs de los demás proyectos no lanzan
+    /// proceso hasta que se selecciona el proyecto.
     func start() {
         let ordered = projects.ordered
         guard !ordered.isEmpty else {
@@ -127,7 +136,21 @@ final class WorkspaceController {
 
     // MARK: Tabs
 
+    /// `+` y ⌘T: pregunta terminal o agente.
     func newTab() {
+        guard let project = model.activeProject else { return }
+        switch TabCreationDialogs.askTabKind() {
+        case .terminal:
+            addShellTab(projectId: project.id)
+        case .agent:
+            Task { @MainActor in await askAgent(project: project) }
+        case nil:
+            break
+        }
+    }
+
+    /// Botón del vacío: una terminal, sin preguntar.
+    func newShellTab() {
         guard let project = model.activeProject else { return }
         addShellTab(projectId: project.id)
     }
@@ -143,6 +166,17 @@ final class WorkspaceController {
         selectTab(id: tabs[number - 1].id)
     }
 
+    private func askAgent(project: Project) async {
+        guard let adapter = adapters[.grok] else { return }
+        // `list` corre fuera del hilo principal: el diálogo aparece cuando hay lista.
+        let sessions = await adapter.list(cwd: project.path)
+        guard let choice = TabCreationDialogs.askAgentSession(
+            agentName: adapter.kind.displayName,
+            sessions: sessions
+        ) else { return }
+        addAgentTab(projectId: project.id, adapter: adapter, choice: choice)
+    }
+
     private func addShellTab(projectId: UUID) {
         guard let project = projects.project(id: projectId) else { return }
         let cwd = FileManager.default.fileExists(atPath: project.path)
@@ -154,6 +188,53 @@ final class WorkspaceController {
             kind: .shell,
             cwd: cwd,
             title: shellTitle(for: cwd))
+        sessions.add(tab)
+        installSurface(for: tab)
+        show(tabId: tab.id)
+        projects.touch(id: projectId)
+        refresh()
+        focusActiveSurface()
+    }
+
+    private func addAgentTab(projectId: UUID, adapter: AgentAdapter, choice: TabCreationDialogs.AgentChoice) {
+        guard let project = projects.project(id: projectId) else { return }
+        let cwd = FileManager.default.fileExists(atPath: project.path)
+            ? project.path
+            : NSHomeDirectory()
+
+        let tab: Tab
+        switch choice {
+        case .fresh:
+            // Speell propone el id y el CLI lo respeta: el puntero nace fiable.
+            let sessionId = UUID().uuidString.lowercased()
+            tab = Tab(
+                projectId: projectId,
+                kind: .agent,
+                cwd: cwd,
+                title: adapter.kind.displayName,
+                agent: adapter.kind,
+                sessionId: sessionId,
+                resumeQuality: .exact)
+        case .latest:
+            tab = Tab(
+                projectId: projectId,
+                kind: .agent,
+                cwd: cwd,
+                title: adapter.kind.displayName,
+                agent: adapter.kind,
+                sessionId: nil,
+                resumeQuality: .latestInDir)
+        case .session(let reference):
+            tab = Tab(
+                projectId: projectId,
+                kind: .agent,
+                cwd: cwd,
+                title: reference.title,
+                agent: adapter.kind,
+                sessionId: reference.id,
+                resumeQuality: .exact)
+        }
+
         sessions.add(tab)
         installSurface(for: tab)
         show(tabId: tab.id)
@@ -199,20 +280,31 @@ final class WorkspaceController {
     }
 
     private func installSurface(for tab: Tab) {
-        let cwd = FileManager.default.fileExists(atPath: tab.cwd)
-            ? tab.cwd
-            : fallbackCwd(for: tab)
-        let view = SurfaceView(host: host, cwd: cwd)
+        let view = SurfaceView(host: host, command: command(for: tab))
         view.onCloseRequest = { [weak self] in self?.closeTab(id: tab.id) }
         pane.install(view, forTab: tab.id)
     }
 
-    private func fallbackCwd(for tab: Tab) -> String {
-        guard let project = projects.project(id: tab.projectId),
-              FileManager.default.fileExists(atPath: project.path) else {
-            return NSHomeDirectory()
+    /// Rearma el comando desde el puntero guardado. No se persiste el comando:
+    /// el flag del CLI es del adaptador, no del disco.
+    private func command(for tab: Tab) -> Command {
+        let cwd = resolvedCwd(for: tab)
+        guard tab.kind == .agent, let agent = tab.agent, let adapter = adapters[agent] else {
+            return .shell(in: cwd)
         }
-        return project.path
+        if let id = tab.sessionId, tab.resumeQuality != .latestInDir {
+            return adapter.resume(cwd: cwd, id: id)
+        }
+        return adapter.continueLatest(cwd: cwd)
+    }
+
+    private func resolvedCwd(for tab: Tab) -> String {
+        if FileManager.default.fileExists(atPath: tab.cwd) { return tab.cwd }
+        if let project = projects.project(id: tab.projectId),
+           FileManager.default.fileExists(atPath: project.path) {
+            return project.path
+        }
+        return NSHomeDirectory()
     }
 
     private func show(tabId: UUID?) {

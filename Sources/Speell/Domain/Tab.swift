@@ -11,6 +11,14 @@ enum AgentKind: String, Codable, CaseIterable {
     case grok
     case opencode2
     case agy
+
+    var displayName: String {
+        switch self {
+        case .grok: return "Grok"
+        case .opencode2: return "OpenCode 2"
+        case .agy: return "Agy"
+        }
+    }
 }
 
 /// Calidad del resume de una tab de agente (TRD, modelo de sesión).

@@ -3,6 +3,8 @@ import Foundation
 
 /// Estado que consume la UI y las intenciones que emite.
 /// La vista no conoce stores, ni libghostty, ni arma comandos.
+/// Las intenciones se emiten desde el hilo principal (botones y menús).
+@MainActor
 final class WorkspaceModel: ObservableObject {
     @Published var projects: [Project] = []
     /// Proyectos cuyo path ya no existe en disco. La fila queda rota, no se borra.
@@ -15,6 +17,8 @@ final class WorkspaceModel: ObservableObject {
     var onSelectProject: (UUID) -> Void = { _ in }
     var onRemoveProject: (UUID) -> Void = { _ in }
     var onNewTab: () -> Void = {}
+    /// Terminal directa, sin preguntar (vacío "Nueva terminal").
+    var onNewTerminal: () -> Void = {}
     var onSelectTab: (UUID) -> Void = { _ in }
     var onCloseTab: (UUID) -> Void = { _ in }
 
