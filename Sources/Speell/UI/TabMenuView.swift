@@ -2,16 +2,21 @@ import SwiftUI
 
 /// Menú del `+`: terminal y una fila por agente con sus acciones como iconos.
 /// Vive en un popover anclado al botón; elegir sesión abre un modal aparte.
+/// La tarjeta "Nuevo agente" del home lo reutiliza sin la fila de terminal.
 struct TabMenuView: View {
     @ObservedObject var model: WorkspaceModel
     /// Cierra el popover cuando ya se eligió algo.
     var dismiss: () -> Void
+    /// La fila de terminal sale por defecto; el home la omite.
+    var showsTerminalRow: Bool = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            MenuRow(title: "Nueva terminal", systemImage: "terminal") {
-                model.onNewTerminal()
-                dismiss()
+            if showsTerminalRow {
+                MenuRow(title: "Nueva terminal", systemImage: "terminal") {
+                    model.onNewTerminal()
+                    dismiss()
+                }
             }
 
             if !model.availableAgents.isEmpty {

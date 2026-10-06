@@ -17,14 +17,12 @@ struct MainContentView: View {
                     EmptyStateView(
                         kind: .noProject,
                         background: SpeellPalette.color(fromHex: model.terminalBackgroundHex),
-                        onOpenFolder: { model.onAddProject() },
-                        onNewTerminal: {})
+                        model: model)
                 } else if model.tabs.isEmpty {
                     EmptyStateView(
                         kind: .noTabs,
                         background: SpeellPalette.color(fromHex: model.terminalBackgroundHex),
-                        onOpenFolder: { model.onAddProject() },
-                        onNewTerminal: { model.onNewTerminal() })
+                        model: model)
                 }
             }
         }
