@@ -1,14 +1,12 @@
 import SwiftUI
 
-/// Una tab: título y botón de cerrar al hover o si está activa.
+/// Una tab: título y botón de cerrar siempre visible.
 /// El punto de estado llega con los avisos (fase 4).
 struct TabItem: View {
     let tab: Tab
     let active: Bool
     var onSelect: () -> Void
     var onClose: () -> Void
-
-    @State private var hovering = false
 
     var body: some View {
         HStack(spacing: 6) {
@@ -22,15 +20,13 @@ struct TabItem: View {
                     .foregroundStyle(.secondary)
             }
 
-            if active || hovering {
-                Button(action: onClose) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 9, weight: .bold))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .help("Cerrar tab")
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
             }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .help("Cerrar tab")
         }
         .padding(.horizontal, 10)
         // Cuatro puntos menos que el app bar: dos de aire arriba. Abajo no hay
@@ -50,7 +46,6 @@ struct TabItem: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
-        .onHover { hovering = $0 }
     }
 
     /// La tab dice con qué calidad se retoma el hilo (UX, Lanzar y retomar).
