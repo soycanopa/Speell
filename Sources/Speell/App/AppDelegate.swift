@@ -4,6 +4,7 @@ import SwiftUI
 
 /// Composition root de la app: ventana, menú y ciclo de vida.
 /// No habla con el C API de libghostty ni con los stores; eso es del controller.
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
     private var host: GhosttyHost?
@@ -48,8 +49,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         controller.model.$activeProjectId
             .sink { [weak self] id in
-                guard let self else { return }
-                self.window?.title = controller.projectName(for: id)
+                // `sink` no está aislado; el estado y la ventana viven en main.
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.window?.title = controller.projectName(for: id)
+                }
             }
             .store(in: &cancellables)
 
