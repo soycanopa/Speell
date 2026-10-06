@@ -67,9 +67,16 @@ enum SpeellPalette {
     /// Radio de las esquinas de la sidebar y de la terminal.
     static let cornerRadius: CGFloat = 8
 
-    /// La forma redondeada que comparten la sidebar y la terminal.
-    static var corner: RoundedRectangle {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+    /// La forma completamente redondeada, para las superficies que no tienen
+    /// tab pegada (la configuración). Mismo tipo que `pane` para que puedan
+    /// elegirse en el mismo `clipShape`.
+    static var corner: UnevenRoundedRectangle {
+        UnevenRoundedRectangle(
+            topLeadingRadius: cornerRadius,
+            bottomLeadingRadius: cornerRadius,
+            bottomTrailingRadius: cornerRadius,
+            topTrailingRadius: cornerRadius,
+            style: .continuous)
     }
 
     /// La forma de la tab activa: redondeada arriba, recta abajo, porque nace
