@@ -66,14 +66,16 @@ enum SpeellPalette {
             style: .continuous)
     }
 
-    /// La forma del pane de la terminal: recto arriba —el app bar y la tab
-    /// activa se apoyan en ese borde—, redondeado abajo.
+    /// La forma del pane de la terminal: redondeada abajo y en la esquina
+    /// superior derecha, que da contra el chrome. Arriba a la izquierda va
+    /// recta: ahí nace la tab activa, y una esquina redondeada abriría una
+    /// cuña de chrome justo donde la tab se une con la terminal.
     static var pane: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
             topLeadingRadius: 0,
             bottomLeadingRadius: cornerRadius,
             bottomTrailingRadius: cornerRadius,
-            topTrailingRadius: 0,
+            topTrailingRadius: cornerRadius,
             style: .continuous)
     }
 }
