@@ -7,6 +7,7 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
+    private var split: NSSplitViewController?
     private var host: GhosttyHost?
     private var controller: WorkspaceController?
     private var cancellables: Set<AnyCancellable> = []
@@ -26,7 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         sidebar.maximumThickness = 320
         sidebar.canCollapse = true
 
-        let split = NSSplitViewController()
+        let split = WorkspaceSplitViewController()
         split.addSplitViewItem(sidebar)
         split.addSplitViewItem(NSSplitViewItem(
             viewController: hosting(MainContentView(model: controller.model, pane: pane))))
@@ -59,17 +60,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let container = NSView(
             frame: NSRect(x: 0, y: 0, width: 1000, height: 640))
         let barHeight = AppBarView.height
+        let pad = SpeellPalette.windowPadding
 
+        // Todo el contenido —app bar, sidebar y terminal— entra dentro del
+        // margen. AppKit mide desde abajo, así que el margen va en `y` del app
+        // bar y el split arranca sobre él.
         split.view.frame = NSRect(
-            x: 0, y: 0,
-            width: container.bounds.width,
-            height: container.bounds.height - barHeight)
+            x: pad, y: pad,
+            width: container.bounds.width - pad * 2,
+            height: container.bounds.height - barHeight - pad * 2)
         split.view.autoresizingMask = [.width, .height]
 
         let appBar = NSHostingView(rootView: AppBarView(model: controller.model))
         appBar.frame = NSRect(
-            x: 0, y: container.bounds.height - barHeight,
-            width: container.bounds.width,
+            x: pad, y: container.bounds.height - barHeight - pad,
+            width: container.bounds.width - pad * 2,
             height: barHeight)
         appBar.autoresizingMask = [.width, .minYMargin]
 
@@ -81,9 +86,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // franja. Se compensa para no entregar menos terminal que antes.
         window.setContentSize(NSSize(width: 1000, height: 640 + barHeight))
         split.splitView.setPosition(240, ofDividerAt: 0)
-        window.center()
+        centerWindowControls(in: window, barHeight: barHeight)
+        // `center()` usa la pantalla principal del proceso, que con varias
+        // pantallas puede no ser la que el usuario tiene delante. Se ancla al
+        // área visible de `NSScreen.main` para que la ventana aparezca donde se
+        // está mirando.
+        let initialSize = NSSize(width: 1000, height: 640 + barHeight)
+        if let visible = NSScreen.main?.visibleFrame {
+            window.setFrame(
+                NSRect(
+                    x: visible.midX - initialSize.width / 2,
+                    y: visible.midY - initialSize.height / 2,
+                    width: initialSize.width,
+                    height: initialSize.height),
+                display: true)
+        } else {
+            window.center()
+        }
         window.makeKeyAndOrderFront(nil)
         self.window = window
+        self.split = split
+        // El split no admite delegate externo, así que el ancho se publica desde
+        // una subclase suya que ya está enganchada.
+        split.sidebarItem = sidebar
+        split.onSidebarWidthChanged = { [weak self] width in
+            MainActor.assumeIsolated {
+                self?.controller?.model.contentLeadingOffset = width
+            }
+        }
+        controller.model.contentLeadingOffset = split.contentLeadingOffset ?? 241
 
         controller.model.$activeProjectId
             .sink { [weak self] id in
@@ -141,5 +172,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let controller = NSViewController()
         controller.view = NSHostingView(rootView: view)
         return controller
+    }
+
+    // MARK: Alineación del app bar
+
+    /// macOS coloca los botones de ventana en su propia franja de título, que no
+    /// coincide con la franja de Speell. Se centran en la del app bar para que
+    /// queden alineados con los tabs.
+    private func centerWindowControls(in window: NSWindow, barHeight: CGFloat) {
+        let buttons = [
+            window.standardWindowButton(.closeButton),
+            window.standardWindowButton(.miniaturizeButton),
+            window.standardWindowButton(.zoomButton),
+        ].compactMap { $0 }
+
+        guard let height = buttons.first?.frame.height else { return }
+        let y = ((barHeight - height) / 2).rounded()
+        for button in buttons {
+            button.setFrameOrigin(NSPoint(x: button.frame.origin.x, y: y))
+        }
     }
 }

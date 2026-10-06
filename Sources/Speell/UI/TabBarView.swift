@@ -56,33 +56,33 @@ struct TabBarView: View {
     @State private var showingMenu = false
 
     var body: some View {
+        // Sin `ScrollView` a propósito: un `ScrollView` horizontal centra su
+        // contenido y los tabs se iban al extremo derecho del app bar, que es
+        // justo donde no deben. Con muchos tabs el recorte se resuelve después.
         HStack(spacing: 0) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 0) {
-                    ForEach(model.tabs) { tab in
-                        TabItem(
-                            tab: tab,
-                            active: tab.id == model.activeTabId,
-                            onSelect: { model.onSelectTab(tab.id) },
-                            onClose: { model.onCloseTab(tab.id) })
-                    }
+            ForEach(model.tabs) { tab in
+                TabItem(
+                    tab: tab,
+                    active: tab.id == model.activeTabId,
+                    onSelect: { model.onSelectTab(tab.id) },
+                    onClose: { model.onCloseTab(tab.id) })
+            }
 
-                    Button {
-                        showingMenu = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 11, weight: .medium))
-                            .frame(width: 28, height: 28)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Nueva tab")
-                    .popover(isPresented: $showingMenu, arrowEdge: .bottom) {
-                        TabMenuView(model: model) { showingMenu = false }
-                    }
-                }
+            Button {
+                showingMenu = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .medium))
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Nueva tab")
+            .popover(isPresented: $showingMenu, arrowEdge: .bottom) {
+                TabMenuView(model: model) { showingMenu = false }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: AppBarView.height)
     }
 }
