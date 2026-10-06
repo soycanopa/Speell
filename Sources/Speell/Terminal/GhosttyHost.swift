@@ -6,10 +6,6 @@ import GhosttyKit
 final class GhosttyHost {
     private(set) var app: ghostty_app_t?
 
-    /// La invoca libghostty cuando una surface debe cerrarse, por ejemplo
-    /// cuando el proceso hijo terminó.
-    var onSurfaceClose: (() -> Void)?
-
     init() {
         guard let config = Self.loadConfig() else {
             FileHandle.standardError.write(Data("config de libghostty inválida\n".utf8))
@@ -21,19 +17,21 @@ final class GhosttyHost {
             userdata: Unmanaged.passUnretained(self).toOpaque(),
             supports_selection_clipboard: false,
             wakeup_cb: { userdata in
+                // App-scoped: libghostty pasa el userdata del runtime.
                 guard let userdata else { return }
                 let host = Unmanaged<GhosttyHost>.fromOpaque(userdata).takeUnretainedValue()
                 DispatchQueue.main.async { host.tick() }
             },
             action_cb: { _, _, _ in false },
-            // Sin portapapeles en el spike: libghostty lo trata como no soportado.
+            // Sin portapapeles en v1: libghostty lo trata como no soportado.
             read_clipboard_cb: { _, _, _, _, _, _ in GHOSTTY_CLIPBOARD_READ_UNSUPPORTED },
             confirm_read_clipboard_cb: { _, _, _, _ in },
             write_clipboard_cb: { _, _, _, _, _ in },
             close_surface_cb: { userdata, _ in
+                // Surface-scoped: el userdata es el `SurfaceView` de la surface.
                 guard let userdata else { return }
-                let host = Unmanaged<GhosttyHost>.fromOpaque(userdata).takeUnretainedValue()
-                DispatchQueue.main.async { host.onSurfaceClose?() }
+                let view = Unmanaged<SurfaceView>.fromOpaque(userdata).takeUnretainedValue()
+                DispatchQueue.main.async { view.onCloseRequest?() }
             }
         )
 
