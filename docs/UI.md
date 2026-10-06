@@ -14,7 +14,9 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 - Título: nombre del proyecto activo. Si no hay proyecto, "Speell". Vive en `window.title` para accesibilidad, pero **no se dibuja**: la barra de título está oculta.
 - **Sin barra de título.** La ventana usa `titlebarAppearsTransparent`, `titleVisibility = .hidden` y `fullSizeContentView`, que va en el `styleMask` de creación: insertado después no recalcula el layout.
 - macOS sigue reservando la franja de la barra de título aunque el content view la ocupe, y el `NSSplitViewController` maqueta sus columnas contra el área reservada. Por eso la franja la ocupa **Speell**, no el sistema: un `AppBarView` de ancho completo apilado encima del contenido, dentro de un contenedor.
-- **App bar: 38 pt de alto, de ancho completo.** A la izquierda, 78 pt de hueco para los botones de ventana, que macOS sigue dibujando. Luego los tabs. Luego, a la derecha, la zona reservada y **vacía a propósito** para los iconos del panel que se va a desarrollar; no se inventan iconos ahí.
+- **App bar: 38 pt de alto, de ancho completo.** A la izquierda, el hueco que ocupa la sidebar más el divider, para que los tabs arranquen exactamente en el borde de la terminal. Los botones de ventana, que macOS sigue dibujando sobre la sidebar, caen dentro de ese hueco: no se les reserva ancho aparte. Luego los tabs. Luego, a la derecha, la zona reservada y **vacía a propósito** para los iconos del panel que se va a desarrollar; no se inventan iconos ahí.
+- El hueco del app bar lo publica el composition root como `WorkspaceModel.contentLeadingOffset`, que es el borde derecho de la sidebar —su `frame.maxX`, ya con el divider— y no su ancho. Leer el ancho y además sumar el ancho de los botones de ventana empujaba los tabs 77 px hacia dentro de la terminal.
+- La sidebar se identifica **por referencia** (`WorkspaceSplitViewController.sidebarItem`), nunca por índice: `splitView.subviews.first` devuelve la terminal, no la sidebar, y esa confusion ponía los tabs 831 px a la derecha.
 - Los tabs y el app bar **no llevan línea debajo**: la terminal llega hasta arriba.
 - El alto inicial se compensa con los 38 del app bar (`setContentSize(640 + 38)`) para no entregar menos terminal que antes.
 - Colapsar la sidebar: **pendiente.** Antes se usaba el botón de toolbar de macOS y ya no hay toolbar. El arrastre del divider y el `canCollapse` del split siguen funcionando; falta el control que lo dispare.
@@ -46,7 +48,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 
 ## Surface
 
-- El `NSView` de libghostty llega a los bordes del área de contenido. Sin padding decorativo, sin marco redondo que recorte glifos.
+- El `NSView` de libghostty llega a los bordes del área de contenido, sin padding interno. El redondeo de la ventana es externo: 8 pt de esquinas (`SpeellPalette.cornerRadius`, radio continuo) y 8 pt de margen alrededor de todo el contenido (`SpeellPalette.windowPadding`), más 8 pt de separación entre la sidebar y la terminal. El margen va fuera del `clipShape`, para que el hueco quede sin fondo y se vea el de la ventana.
 - El fondo de la terminal es `#1E1E1E`. El resto del tema sigue siendo el de libghostty y el de la config del usuario; Speell solo impone ese fondo. Se aplica con un override propio (`ghostty.conf` en Application Support) que se carga **después** de la config del usuario y antes de `ghostty_config_finalize`, porque la C API del pin no expone ningún setter de color.
 - Cursor y selección son de libghostty.
 - Cuando la tab está restaurando, un overlay de una línea: "Retomando sesión" o "Abriendo último hilo de esta carpeta". Desaparece al primer frame con contenido. No es un spinner de pantalla completa.

@@ -23,6 +23,7 @@ struct MainContentView: View {
                     onNewTerminal: { model.onNewTerminal() })
             }
         }
+        .clipShape(SpeellPalette.corner)
         .sheet(item: $model.sessionPicker) { request in
             SessionPickerView(model: model, agent: request.agent)
         }

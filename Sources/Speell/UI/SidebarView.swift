@@ -38,8 +38,15 @@ struct SidebarView: View {
             .buttonStyle(.plain)
             .padding(10)
         }
-        // Detrás del contenido, para que el texto y las filas no se atenúen.
+        // Detrás del contenido, para que el texto y las filas no se atenúen. El
+        // `List` pinta su propio fondo, así que se pinta un rectángulo redondeado
+        // opaco del color de la sidebar y encima la capa oscura.
+        .background(SpeellPalette.corner.fill(Color(nsColor: .underPageBackgroundColor)))
         .background(SpeellPalette.sidebarDim)
+        .clipShape(SpeellPalette.corner)
+        // Hueco contra la terminal, por fuera del recorte: los 8 px quedan sin
+        // fondo, que es justo la separación que se ve.
+        .padding(.trailing, SpeellPalette.windowPadding)
         .frame(minWidth: 180, idealWidth: 240, maxWidth: 320)
     }
 
