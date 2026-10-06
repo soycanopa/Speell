@@ -42,6 +42,18 @@ final class GhosttyHost {
         self.app = app
     }
 
+    /// Reconstruye la config (config del usuario + override del palette) y la
+    /// aplica a las surfaces dadas. Es el camino del cambio de fondo en vivo
+    /// desde la configuración: no hay setter de color en el C API, solo
+    /// config nueva sobre la surface.
+    func refreshConfig(on surfaces: [ghostty_surface_t]) {
+        guard let config = Self.loadConfig() else { return }
+        defer { ghostty_config_free(config) }
+        for surface in surfaces {
+            ghostty_surface_update_config(surface, config)
+        }
+    }
+
     /// libghostty avisa por `wakeup_cb`; el tick corre en el hilo principal.
     func tick() {
         guard let app else { return }

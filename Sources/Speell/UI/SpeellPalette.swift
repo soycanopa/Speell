@@ -26,14 +26,15 @@ enum SpeellPalette {
 
     /// El tono de la terminal, como `Color`, para el chrome que empalma con
     /// ella: la tab activa y el vacío del pane. La fuente única del hex es
-    /// `TerminalPalette.backgroundHex`.
+    /// `WorkspaceModel.terminalBackgroundHex` (el override persistido); el
+    /// `backgroundHex` de la spec es solo el valor de siembra.
     static var surfaceBackground: Color { color(fromHex: TerminalPalette.backgroundHex) }
 
     /// `#RRGGBB` a `Color`, por `NSColor(srgbRed:)` como `windowBackground`.
     /// El parseo es a mano, sin `Scanner`: con el `#` delante,
     /// `scanHexInt64` no lee nada y el color sale negro. Nada de opacidad ni
     /// formatos cortos: los hex del producto son siempre de 6.
-    private static func color(fromHex hex: String) -> Color {
+    static func color(fromHex hex: String) -> Color {
         let digits = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
         let value = UInt64(digits, radix: 16) ?? 0
         return Color(nsColor: NSColor(
@@ -41,6 +42,17 @@ enum SpeellPalette {
             green: CGFloat((value >> 8) & 0xFF) / 255,
             blue: CGFloat(value & 0xFF) / 255,
             alpha: 1))
+    }
+
+    /// `Color` a `#RRGGBB`, la vuelta del `color(fromHex:)` para persistir lo
+    /// que el usuario elige en la configuración.
+    static func hex(from color: NSColor) -> String {
+        let c = color.usingColorSpace(.sRGB) ?? color
+        return String(
+            format: "#%02x%02x%02x",
+            Int(round(c.redComponent * 255)),
+            Int(round(c.greenComponent * 255)),
+            Int(round(c.blueComponent * 255)))
     }
 
     /// Margen que la ventana deja entre su borde y el contenido: app bar,

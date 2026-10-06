@@ -8,6 +8,7 @@ struct EmptyStateView: View {
     }
 
     let kind: Kind
+    let background: Color
     var onOpenFolder: () -> Void
     var onNewTerminal: () -> Void
 
@@ -23,6 +24,6 @@ struct EmptyStateView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // El mismo tono que la terminal: el vacío ocupa el lugar de la surface
         // y no se tiene que notar el cambio cuando aparece o desaparece.
-        .background(SpeellPalette.surfaceBackground)
+        .background(background)
     }
 }

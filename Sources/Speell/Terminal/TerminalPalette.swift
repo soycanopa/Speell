@@ -6,30 +6,34 @@ import GhosttyKit
 /// libghostty no expone ningún setter de color en su C API: la única vía para
 /// cambiar un valor de config es cargar un archivo (`ghostty.h:1149`). Speell
 /// escribe el suyo en su carpeta de Application Support y lo carga **después**
-/// de la config del usuario y **antes** de `ghostty_config_finalize`, que es
+/// de la config del usuario y **antes** del `ghostty_config_finalize`, que es
 /// donde queda resuelto el valor final. Así el fondo de Speell gana sin tocar
 /// el archivo de configuración del usuario.
 ///
+/// Desde que existe la configuración de la app, ese archivo es estado del
+/// usuario: si existe se carga tal cual (el dueño es el usuario, no un
+/// rewrite de arranque); si no existe se siembra con el fondo de la spec.
+/// `writeOverride(hex:in:)` es la única escritura y siempre reescribe el
+/// archivo completo.
 /// La carpeta es inyectable para que los tests no escriban en el disco real.
 enum TerminalPalette {
-    /// Fondo de la terminal. Es decisión de producto y vive en `docs/UI.md`.
+    /// Fondo por defecto. Es decisión de producto y vive en `docs/UI.md`.
     static let backgroundHex = "#161616"
 
     static let overrideFileName = "ghostty.conf"
 
-    /// Contenido del override. Solo lo que Speell impone; lo demás sigue
-    /// saliendo de la config del usuario.
-    static var overrideContents: String {
-        "background = \(backgroundHex)\n"
+    /// Fondo vigente: el del override si existe, o el de la spec.
+    static func backgroundHex(in directory: URL) -> String {
+        readOverrideHex(in: directory) ?? backgroundHex
     }
 
-    /// Escribe el override y devuelve dónde quedó, o `nil` si falló.
+    /// Cambia el fondo y lo persiste reescribiendo el override completo.
     @discardableResult
-    static func writeOverride(in directory: URL) -> URL? {
+    static func writeOverride(hex: String, in directory: URL) -> URL? {
         let url = directory.appendingPathComponent(overrideFileName)
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            try overrideContents.write(to: url, atomically: true, encoding: .utf8)
+            try "background = \(hex)\n".write(to: url, atomically: true, encoding: .utf8)
             return url
         } catch {
             FileHandle.standardError.write(
@@ -38,14 +42,35 @@ enum TerminalPalette {
         }
     }
 
-    /// Escribe y carga el override sobre una config ya abierta.
+    /// Carga el override sobre una config ya abierta. Si el archivo no existe
+    /// se siembra con el fondo de la spec; si existe es estado del usuario y
+    /// se carga sin reescribirlo.
     static func apply(to config: ghostty_config_t, in directory: URL) {
-        guard let url = writeOverride(in: directory) else { return }
-        ghostty_config_load_file(config, url.path)
+        let url = directory.appendingPathComponent(overrideFileName)
+        if FileManager.default.fileExists(atPath: url.path) {
+            ghostty_config_load_file(config, url.path)
+            return
+        }
+        guard let written = writeOverride(hex: backgroundHex, in: directory) else { return }
+        ghostty_config_load_file(config, written.path)
     }
 
     /// Carpeta donde Speell guarda su estado; la misma que los stores JSON.
     static var applicationSupportDirectory: URL {
         JSONStore.applicationSupport.directory
+    }
+
+    private static func readOverrideHex(in directory: URL) -> String? {
+        let url = directory.appendingPathComponent(overrideFileName)
+        guard let contents = try? String(contentsOf: url, encoding: .utf8) else { return nil }
+        for line in contents.split(separator: "\n") {
+            let parts = line.split(separator: "=", maxSplits: 1)
+            guard parts.count == 2,
+                  parts[0].trimmingCharacters(in: .whitespaces) == "background"
+            else { continue }
+            let hex = parts[1].trimmingCharacters(in: .whitespaces)
+            return hex.isEmpty ? nil : hex
+        }
+        return nil
     }
 }

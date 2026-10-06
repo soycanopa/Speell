@@ -1,7 +1,6 @@
-import AppKit
 import SwiftUI
 
-/// Contenido de la ventana: la surface de la tab activa.
+/// Contenido de la ventana: la surface de la tab activa, o la configuración.
 /// Los tabs viven en el app bar, no aquí.
 struct MainContentView: View {
     @ObservedObject var model: WorkspaceModel
@@ -9,18 +8,24 @@ struct MainContentView: View {
 
     var body: some View {
         ZStack {
-            TerminalPaneView(pane: pane)
+            if model.appMode == .settings {
+                SettingsView(model: model)
+            } else {
+                TerminalPaneView(pane: pane)
 
-            if model.activeProjectId == nil {
-                EmptyStateView(
-                    kind: .noProject,
-                    onOpenFolder: { model.onAddProject() },
-                    onNewTerminal: {})
-            } else if model.tabs.isEmpty {
-                EmptyStateView(
-                    kind: .noTabs,
-                    onOpenFolder: { model.onAddProject() },
-                    onNewTerminal: { model.onNewTerminal() })
+                if model.activeProjectId == nil {
+                    EmptyStateView(
+                        kind: .noProject,
+                        background: SpeellPalette.color(fromHex: model.terminalBackgroundHex),
+                        onOpenFolder: { model.onAddProject() },
+                        onNewTerminal: {})
+                } else if model.tabs.isEmpty {
+                    EmptyStateView(
+                        kind: .noTabs,
+                        background: SpeellPalette.color(fromHex: model.terminalBackgroundHex),
+                        onOpenFolder: { model.onAddProject() },
+                        onNewTerminal: { model.onNewTerminal() })
+                }
             }
         }
         // El pane redondea solo abajo: arriba el app bar y la tab activa se

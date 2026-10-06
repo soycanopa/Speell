@@ -32,8 +32,16 @@ struct AppBarView: View {
             // `maxWidth: .infinity` es lo que hace que los tabs ocupen todo lo
             // que queda del app bar; sin esto el `HStack` se ajusta a su tamaño
             // ideal y los tabs acaban pegados al borde derecho.
-            TabBarView(model: model)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            //
+            // En configuración no hay tabs: la franja queda limpia y el título
+            // de la sección lo lleva el propio contenido.
+            if model.appMode == .workspace {
+                TabBarView(model: model)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Color.clear
+                    .frame(maxWidth: .infinity)
+            }
         }
         // El `HStack` necesita el ancho completo explícitamente: dentro de un
         // `NSHostingView` que lo aloja, si no, se ajusta a su tamaño ideal y lo

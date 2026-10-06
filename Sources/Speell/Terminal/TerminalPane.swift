@@ -1,4 +1,5 @@
 import AppKit
+import GhosttyKit
 
 /// Contenedor AppKit que muestra la surface de la tab activa y mantiene vivas
 /// las demás (procesos incluidos). No decide qué tab está activa: eso lo hace
@@ -6,6 +7,12 @@ import AppKit
 final class TerminalPane: NSView {
     private var surfaceViews: [UUID: SurfaceView] = [:]
     private var activeTabId: UUID?
+
+    /// Las surfaces vivas, para operaciones que vienen de arriba: aplicar una
+    /// config nueva a todas, por ejemplo.
+    func allSurfaces() -> [ghostty_surface_t] {
+        surfaceViews.values.compactMap(\.surface)
+    }
 
     /// Crea o reemplaza la surface de una tab. Quien la crea es el controller.
     func install(_ surfaceView: SurfaceView, forTab id: UUID) {

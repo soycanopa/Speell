@@ -29,6 +29,8 @@ final class WorkspaceController {
         self.pane = pane
         wireIntents()
         model.availableAgents = AgentKind.allCases.filter { adapters[$0] != nil }
+        model.terminalBackgroundHex = TerminalPalette.backgroundHex(
+            in: TerminalPalette.applicationSupportDirectory)
     }
 
     private func wireIntents() {
@@ -41,6 +43,12 @@ final class WorkspaceController {
         model.onCancelSessionPicker = { [weak self] in self?.cancelSessionPicker() }
         model.onSelectTab = { [weak self] id in self?.selectTab(id: id) }
         model.onCloseTab = { [weak self] id in self?.closeTab(id: id) }
+        model.onBackgroundChange = { [weak self] hex in
+            guard let self else { return }
+            TerminalPalette.writeOverride(hex: hex, in: TerminalPalette.applicationSupportDirectory)
+            self.model.terminalBackgroundHex = hex
+            self.host.refreshConfig(on: self.pane.allSurfaces())
+        }
     }
 
     // MARK: Arranque y cierre

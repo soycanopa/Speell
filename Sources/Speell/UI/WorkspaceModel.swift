@@ -15,6 +15,36 @@ struct SessionPickerRequest: Identifiable, Equatable {
     var id: String { agent.rawValue }
 }
 
+/// Modo de la app: el workspace o la configuración. Las surfaces y procesos
+/// siguen vivos al entrar a settings; al volver, el workspace está exacto.
+enum AppMode {
+    case workspace
+    case settings
+}
+
+/// Sección de la configuración. Se lista en la sidebar y sus opciones salen
+/// en el área de contenido, sin tabs.
+enum SettingsSection: String, CaseIterable, Identifiable {
+    case apariencia
+    case agentes
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .apariencia: return "Apariencia"
+        case .agentes: return "Agentes"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .apariencia: return "paintbrush"
+        case .agentes: return "cpu"
+        }
+    }
+}
+
 /// Estado que consume la UI y las intenciones que emite.
 /// La vista no conoce stores, ni libghostty, ni arma comandos.
 /// Las intenciones se emiten desde el hilo principal (botones y menús).
@@ -43,6 +73,16 @@ final class WorkspaceModel: ObservableObject {
     @Published var agentSessions: [SessionRef] = []
     @Published var loadingSessions = false
 
+    /// Modo de la app y sección activa de la configuración.
+    @Published var appMode: AppMode = .workspace
+    @Published var settingsSection: SettingsSection = .apariencia
+
+    /// El fondo vigente de la terminal, en hex. Lo publica el composition
+    /// root al arrancar (leído del override persistido) y cada vez que cambia
+    /// desde la configuración; el chrome que empalma con la terminal (tab
+    /// activa, vacío del pane) pinta con este valor.
+    @Published var terminalBackgroundHex: String = TerminalPalette.backgroundHex
+
     var onAddProject: () -> Void = {}
     var onSelectProject: (UUID) -> Void = { _ in }
     var onRemoveProject: (UUID) -> Void = { _ in }
@@ -52,6 +92,8 @@ final class WorkspaceModel: ObservableObject {
     var onCancelSessionPicker: () -> Void = {}
     var onSelectTab: (UUID) -> Void = { _ in }
     var onCloseTab: (UUID) -> Void = { _ in }
+    /// Cambio de fondo desde la configuración: hex `#RRGGBB`.
+    var onBackgroundChange: (String) -> Void = { _ in }
 
     var activeProject: Project? {
         projects.first { $0.id == activeProjectId }

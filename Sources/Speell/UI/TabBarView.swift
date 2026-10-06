@@ -5,6 +5,7 @@ import SwiftUI
 struct TabItem: View {
     let tab: Tab
     let active: Bool
+    let backgroundHex: String
     var onSelect: () -> Void
     var onClose: () -> Void
 
@@ -33,7 +34,7 @@ struct TabItem: View {
         // Las inactivas son solo texto sobre la franja.
         .background(alignment: .top) {
             if active {
-                SpeellPalette.surfaceBackground
+                SpeellPalette.color(fromHex: backgroundHex)
                     .frame(height: AppBarView.height)
                     .clipShape(SpeellPalette.attachedTab)
             }
@@ -57,6 +58,7 @@ struct TabBarView: View {
                 TabItem(
                     tab: tab,
                     active: tab.id == model.activeTabId,
+                    backgroundHex: model.terminalBackgroundHex,
                     onSelect: { model.onSelectTab(tab.id) },
                     onClose: { model.onCloseTab(tab.id) })
             }
