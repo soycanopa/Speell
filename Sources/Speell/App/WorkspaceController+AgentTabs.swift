@@ -51,15 +51,6 @@ extension WorkspaceController {
                 agent: adapter.kind,
                 sessionId: nil,
                 resumeQuality: .fresh)
-        case .latest:
-            tab = Tab(
-                projectId: projectId,
-                kind: .agent,
-                cwd: cwd,
-                title: adapter.kind.displayName,
-                agent: adapter.kind,
-                sessionId: nil,
-                resumeQuality: .latestInDir)
         case .session(let reference):
             tab = Tab(
                 projectId: projectId,

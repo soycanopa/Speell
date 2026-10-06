@@ -4,7 +4,6 @@ import Foundation
 /// Qué sesión abrir en una tab de agente. Lo elige el menú del `+`.
 enum AgentTabChoice {
     case fresh
-    case latest
     case session(SessionRef)
 }
 
