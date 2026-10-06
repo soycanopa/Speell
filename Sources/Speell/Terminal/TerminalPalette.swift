@@ -13,7 +13,7 @@ import GhosttyKit
 /// La carpeta es inyectable para que los tests no escriban en el disco real.
 enum TerminalPalette {
     /// Fondo de la terminal. Es decisión de producto y vive en `docs/UI.md`.
-    static let backgroundHex = "#1E1E1E"
+    static let backgroundHex = "#161616"
 
     static let overrideFileName = "ghostty.conf"
 
