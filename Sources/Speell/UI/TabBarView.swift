@@ -41,7 +41,9 @@ struct TabItem: View {
         // fondo de la ventana y se distingue por el texto.
         .background {
             if active {
-                Color(nsColor: .controlBackgroundColor)
+                // El tono de la terminal: la tab activa empalma con la surface
+                // que gobierna, en vez de ser un bloque suelto del chrome.
+                SpeellPalette.surfaceBackground
                     .clipShape(SpeellPalette.corner)
             }
         }

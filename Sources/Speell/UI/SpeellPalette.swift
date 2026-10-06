@@ -24,6 +24,22 @@ enum SpeellPalette {
     /// El mismo fondo como `Color`, para las vistas que lo necesiten.
     static var windowBackgroundColor: Color { Color(nsColor: windowBackground) }
 
+    /// El tono de la terminal, como `Color`, para el chrome que empalma con
+    /// ella: la tab activa y el vacío del pane. La fuente única del hex es
+    /// `TerminalPalette.backgroundHex`.
+    static var surfaceBackground: Color { color(fromHex: TerminalPalette.backgroundHex) }
+
+    /// `#RRGGBB` a `Color`. Nada de opacidad ni formatos cortos: los hex del
+    /// producto son siempre de 6.
+    private static func color(fromHex hex: String) -> Color {
+        var value: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&value)
+        return Color(
+            red: Double((value >> 16) & 0xFF) / 255,
+            green: Double((value >> 8) & 0xFF) / 255,
+            blue: Double(value & 0xFF) / 255)
+    }
+
     /// Margen que la ventana deja entre su borde y el contenido: app bar,
     /// sidebar y terminal.
     static let windowPadding: CGFloat = 8

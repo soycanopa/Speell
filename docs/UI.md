@@ -47,7 +47,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
   - terminó: verde
   - falló: rojo
   - sin hook: ninguno, y el menú de la tab lo dice
-- Tab activa: contraste de fondo, no un subrayado de navegador. **Solo la activa lleva las cuatro esquinas redondeadas** (mismo radio que sidebar y terminal, `SpeellPalette.corner`); las inactivas van planas y se distinguen solo por el texto. Alto de tab: app bar menos 4, para que queden 2 pt de aire arriba y abajo.
+- Tab activa: contraste de fondo, no un subrayado de navegador. El fondo es el tono de la terminal (`SpeellPalette.surfaceBackground`, que lee `TerminalPalette.backgroundHex`), así la tab activa empalma con la surface que gobierna; antes era `controlBackgroundColor`. **Solo la activa lleva las cuatro esquinas redondeadas** (mismo radio que sidebar y terminal, `SpeellPalette.corner`); las inactivas van planas y se distinguen solo por el texto. Alto de tab: app bar menos 4, para que queden 2 pt de aire arriba y abajo.
 - `+` al final, no una tab falsa.
 
 ## Surface
