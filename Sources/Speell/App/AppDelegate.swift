@@ -201,16 +201,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: Alineación de los botones de ventana
 
     /// macOS coloca los botones de ventana en su propia barra de título —una
-    /// vista de 28 pt cuyas coordenadas no controla Speell—. Se centra el frame
-    /// del botón en el centro real del app bar, convertido al sistema de
-    /// coordenadas de esa vista.
-    ///
-    /// El punto de vidrio se dibuja ~2 pt por encima del centro del frame, así
-    /// que centrado así cae a ~24 pt del tope: dentro de la banda de 28 del
-    /// sistema —bajarlo más lo recorta— y a 2 pt del centro de la franja.
+    /// vista de 28 pt cuyas coordenadas no controla Speell— y el sistema
+    /// recorta el glifo en una línea fija a ~27,5 pt del tope, sin importar
+    /// dónde esté el frame (medido moviendo el frame en vivo). El círculo
+    /// completo mide ~11 pt; con `+6` sobre el centro del app bar queda en
+    /// [14,5, 25,5]: cierra entero y es lo más bajo que la banda permite.
+    /// Centrarlo de verdad en la franja (centro 26) lo corta: no cabe.
     private func centerWindowControls(in window: NSWindow, on bar: NSView) {
         guard let content = window.contentView else { return }
-        let barCenter = CGPoint(x: 0, y: bar.frame.midY)
+        let barCenter = CGPoint(x: 0, y: bar.frame.midY + 6)
 
         let buttons = [
             window.standardWindowButton(.closeButton),
