@@ -53,6 +53,7 @@ struct TabItem: View {
 /// Barra de tabs sobre la surface, con `+` al final.
 struct TabBarView: View {
     @ObservedObject var model: WorkspaceModel
+    @State private var showingMenu = false
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -66,7 +67,7 @@ struct TabBarView: View {
                 }
 
                 Button {
-                    model.onNewTab()
+                    showingMenu = true
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 11, weight: .medium))
@@ -74,7 +75,10 @@ struct TabBarView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .help("Nueva terminal")
+                .help("Nueva tab")
+                .popover(isPresented: $showingMenu, arrowEdge: .bottom) {
+                    TabMenuView(model: model) { showingMenu = false }
+                }
             }
         }
         .frame(height: 28)
