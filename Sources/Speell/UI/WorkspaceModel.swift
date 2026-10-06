@@ -22,31 +22,34 @@ enum AppMode {
     case settings
 }
 
-/// Sección de la configuración. Se lista en la sidebar y sus opciones salen
-/// en el área de contenido, sin tabs.
-enum SettingsSection: String, CaseIterable, Identifiable {
-    case apariencia
-    case agentes
-    case notificaciones
+    /// Sección de la configuración. Se lista en la sidebar y sus opciones salen
+    /// en el área de contenido, sin tabs.
+    enum SettingsSection: String, CaseIterable, Identifiable {
+        case apariencia
+        case agentes
+        case notificaciones
+        case archivados
 
-    var id: String { rawValue }
+        var id: String { rawValue }
 
-    var title: String {
-        switch self {
-        case .apariencia: return "Apariencia"
-        case .agentes: return "Agentes"
-        case .notificaciones: return "Notificaciones"
+        var title: String {
+            switch self {
+            case .apariencia: return "Apariencia"
+            case .agentes: return "Agentes"
+            case .notificaciones: return "Notificaciones"
+            case .archivados: return "Archivados"
+            }
+        }
+
+        var systemImage: String {
+            switch self {
+            case .apariencia: return "paintbrush"
+            case .agentes: return "cpu"
+            case .notificaciones: return "bell"
+            case .archivados: return "archivebox"
+            }
         }
     }
-
-    var systemImage: String {
-        switch self {
-        case .apariencia: return "paintbrush"
-        case .agentes: return "cpu"
-        case .notificaciones: return "bell"
-        }
-    }
-}
 
 /// Estado que consume la UI y las intenciones que emite.
 /// La vista no conoce stores, ni libghostty, ni arma comandos.
@@ -56,6 +59,9 @@ final class WorkspaceModel: ObservableObject {
     @Published var projects: [Project] = []
     /// Proyectos cuyo path ya no existe en disco. La fila queda rota, no se borra.
     @Published var missingProjectIds: Set<UUID> = []
+    /// Proyectos archivados (settings → Archivados). Fuera de la sidebar
+    /// hasta que el usuario los recupere.
+    @Published var archivedProjects: [Project] = []
     @Published var tabs: [Tab] = []
     @Published var activeProjectId: UUID?
     @Published var activeTabId: UUID?
@@ -117,6 +123,14 @@ final class WorkspaceModel: ObservableObject {
     var onAddProject: () -> Void = {}
     var onSelectProject: (UUID) -> Void = { _ in }
     var onRemoveProject: (UUID) -> Void = { _ in }
+    /// Archivar desde el menú contextual: sale de la sidebar, queda en
+    /// settings → Archivados.
+    var onArchiveProject: (UUID) -> Void = { _ in }
+    /// Recuperar un archivado desde settings → Archivados.
+    var onRestoreProject: (UUID) -> Void = { _ in }
+    /// Cambiar el nombre visible desde el menú contextual. El nombre vive
+    /// solo en Speell; la carpeta queda igual.
+    var onRenameProject: (UUID) -> Void = { _ in }
     var onNewTerminal: () -> Void = {}
     var onNewAgentTab: (AgentKind, AgentTabChoice) -> Void = { _, _ in }
     var onPickAgentSession: (AgentKind) -> Void = { _ in }

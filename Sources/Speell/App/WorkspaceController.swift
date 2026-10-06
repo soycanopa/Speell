@@ -137,6 +137,9 @@ final class WorkspaceController {
         model.onAddProject = { [weak self] in self?.addProject() }
         model.onSelectProject = { [weak self] id in self?.selectProject(id: id) }
         model.onRemoveProject = { [weak self] id in self?.removeProject(id: id) }
+        model.onArchiveProject = { [weak self] id in self?.archiveProject(id: id) }
+        model.onRestoreProject = { [weak self] id in self?.restoreProject(id: id) }
+        model.onRenameProject = { [weak self] id in self?.renameProject(id: id) }
         model.onNewTerminal = { [weak self] in self?.newShellTab() }
         model.onNewAgentTab = { [weak self] agent, choice in self?.newAgentTab(agent: agent, choice: choice) }
         model.onPickAgentSession = { [weak self] agent in self?.pickAgentSession(agent: agent) }
@@ -192,15 +195,15 @@ final class WorkspaceController {
     /// cada una desde su puntero. Las tabs de los demás proyectos no lanzan
     /// proceso hasta que se selecciona el proyecto.
     func start() {
-        let ordered = projects.ordered
-        guard !ordered.isEmpty else {
+        let candidates = projects.unarchived
+        guard !candidates.isEmpty else {
             refresh()
             return
         }
         let last = projects.lastActiveProjectId.flatMap { id in
-            ordered.first { $0.id == id }
+            candidates.first { $0.id == id }
         }
-        selectProject(id: (last ?? ordered[0]).id)
+        selectProject(id: (last ?? candidates[0]).id)
     }
 
     func focusActiveSurface() {
@@ -221,15 +224,15 @@ final class WorkspaceController {
     // MARK: Estado para la UI
 
     func refresh() {
-        let ordered = projects.ordered
-        model.projects = ordered
+        model.projects = projects.unarchived
+        model.archivedProjects = projects.archived
         model.missingProjectIds = Set(
-            ordered.filter { !FileManager.default.fileExists(atPath: $0.path) }.map(\.id))
+            model.projects.filter { !FileManager.default.fileExists(atPath: $0.path) }.map(\.id))
 
         let active = projects.lastActiveProjectId.flatMap { id in
-            ordered.contains { $0.id == id } ? id : nil
+            model.projects.contains { $0.id == id } ? id : nil
         }
-        model.activeProjectId = active ?? ordered.first?.id
+        model.activeProjectId = active ?? model.projects.first?.id
         model.tabs = model.activeProjectId.map { sessions.tabs(of: $0) } ?? []
 
         if let current = model.activeTabId, !model.tabs.contains(where: { $0.id == current }) {

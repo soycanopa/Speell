@@ -29,8 +29,9 @@ El teclado, cuando la surface tiene foco, es de la surface. Speell no se come la
 ## Proyectos
 
 - Añadir proyecto: selector de carpeta. Se guarda el path. Si el path desaparece, la fila queda en estado roto, no se borra sola.
-- Quitar de la sidebar no borra el disco. Pide confirmación.
-- Seleccionar un proyecto restaura sus tabs. El último proyecto activo vuelve a abrirse al lanzar Speell.
+- Menú contextual de la fila: cambiar nombre (vive solo en Speell, la carpeta queda igual), archivar y eliminar. Eliminar no borra el disco. Pide confirmación.
+- Archivar saca el proyecto de la sidebar y lo deja en settings → Archivados, desde donde se recupera con sus tabs. Volver a fijar una carpeta archivada también la recupera. Archivar no pide confirmación: es reversible.
+- Seleccionar un proyecto restaura sus tabs. El último proyecto activo vuelve a abrirse al lanzar Speell; los archivados no cuentan.
 - Orden: última actividad arriba. Sin carpetas anidadas de proyectos en v1.
 
 ## Tabs

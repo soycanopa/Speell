@@ -133,7 +133,14 @@ struct SidebarView: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
-            Button("Quitar de la sidebar") {
+            Button("Cambiar nombre…") {
+                model.onRenameProject(project.id)
+            }
+            Button("Archivar") {
+                model.onArchiveProject(project.id)
+            }
+            Divider()
+            Button("Eliminar proyecto", role: .destructive) {
                 model.onRemoveProject(project.id)
             }
         }

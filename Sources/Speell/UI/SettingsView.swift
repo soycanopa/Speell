@@ -34,6 +34,7 @@ struct SettingsView: View {
         case .apariencia: AppearanceSection(model: model)
         case .agentes: AgentsSection(model: model)
         case .notificaciones: NotificationsSection(model: model)
+        case .archivados: ArchivedSection(model: model)
         }
     }
 
@@ -432,6 +433,66 @@ private struct NotificationsSection: View {
             }
             Spacer(minLength: 24)
             control()
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+    }
+}
+
+/// Archivados: proyectos fuera de la sidebar, recuperables. Archivar no
+/// borra nada: la fila conserva su path y sus punteros de sesión.
+private struct ArchivedSection: View {
+    @ObservedObject var model: WorkspaceModel
+
+    var body: some View {
+        if model.archivedProjects.isEmpty {
+            Text("No hay proyectos archivados.")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+        } else {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(model.archivedProjects) { project in
+                    row(project)
+                    if project.id != model.archivedProjects.last?.id {
+                        Divider().padding(.leading, 14)
+                    }
+                }
+            }
+        }
+    }
+
+    private func row(_ project: Project) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "archivebox")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(project.displayName)
+                    .font(.system(size: 13))
+                Text(project.path)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            Spacer(minLength: 12)
+            Button {
+                model.onRestoreProject(project.id)
+            } label: {
+                Text("Recuperar")
+                    .font(.system(size: 11, weight: .medium))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color.accentColor.opacity(0.22))
+                    }
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Vuelve a la sidebar con sus tabs")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
