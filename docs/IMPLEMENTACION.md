@@ -47,6 +47,12 @@ Ejemplos: `feat(terminal): embed libghostty surface in nsview`, `feat(agents): r
 
 Prohibido un commit "MVP". Prohibido colgar la lógica nueva en un archivo que ya hace otra cosa: el archivo nuevo entra en el mismo commit que el cambio.
 
+## Releases
+
+Una fase terminada, un release **completo**, no un pre-release: tag anotado `vX.Y.Z` sobre el merge de la fase en `main`, y notas con qué entra, qué se verificó y cómo se construye.
+
+No se publica la fase a medias ni se corta el tag con trabajo de la fase siguiente a medio camino. Las notas dicen lo que falta y lo que no se pudo verificar, no lo esconden.
+
 ## Módulos en cada fase
 
 Cada fase nace en su carpeta del TRD. La fase 0 no crea un `AppDelegate` con el shell, el resize y el kill dentro. La fase 2 añade `Agents/GrokAdapter.swift` y tests, no un `if grok` en la vista. Si un archivo pasa el tope de la sección Arquitectura modular, partirlo es parte de la tarea, no un refactor futuro.
