@@ -31,25 +31,55 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         split.addSplitViewItem(NSSplitViewItem(
             viewController: hosting(MainContentView(model: controller.model, pane: pane))))
 
+        // Sin barra de título visible: la zona de arriba la ocupa Speell. Los botones
+        // de ventana se quedan donde macOS los pone, sobre la sidebar, y la
+        // barra de tabs arranca a su derecha.
+        //
+        // `fullSizeContentView` va en el `styleMask` de creación, no con un
+        // `insert` después: insertado más tarde no recalcula el layout y la
+        // franja de arriba queda reservada, con los tabs una fila más abajo de
+        // donde deberían.
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1000, height: 640),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false)
         window.title = "Speell"
         window.contentMinSize = NSSize(width: 480, height: 200)
-        window.contentViewController = split
-        // Sin barra de título visible: la zona de arriba la ocupa Speell. Los
-        // botones de ventana se quedan donde macOS los pone, sobre la sidebar,
-        // y la barra de tabs arranca a su derecha, al mismo ancho que el
-        // contenido. Va después de `contentViewController` porque asignarlo
-        // reconfigura la ventana y se come estas propiedades.
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
-        window.styleMask.insert(.fullSizeContentView)
-        // Asignar el contentViewController encoge la ventana al tamaño mínimo
-        // que reportan las vistas; el tamaño inicial se fija después.
-        window.setContentSize(NSSize(width: 1000, height: 640))
+
+        // El app bar y el split no son `contentViewController`: hace falta un
+        // contenedor para apilar el bar encima del contenido y que ambos ocupen
+        // el ancho completo. El split conserva el colapso y el arrastre
+        // nativos de macOS porque sigue siendo un `NSSplitViewController`.
+        //
+        // AppKit mide desde abajo, así que el bar va arriba: su `y` es el alto
+        // del contenedor menos el del bar.
+        let container = NSView(
+            frame: NSRect(x: 0, y: 0, width: 1000, height: 640))
+        let barHeight = AppBarView.height
+
+        split.view.frame = NSRect(
+            x: 0, y: 0,
+            width: container.bounds.width,
+            height: container.bounds.height - barHeight)
+        split.view.autoresizingMask = [.width, .height]
+
+        let appBar = NSHostingView(rootView: AppBarView(model: controller.model))
+        appBar.frame = NSRect(
+            x: 0, y: container.bounds.height - barHeight,
+            width: container.bounds.width,
+            height: barHeight)
+        appBar.autoresizingMask = [.width, .minYMargin]
+
+        container.addSubview(split.view)
+        container.addSubview(appBar)
+        window.contentView = container
+        // Con `fullSizeContentView` el content view ocupa los 640 enteros y el
+        // app bar se apila arriba, así que la terminal pierde los 38 de la
+        // franja. Se compensa para no entregar menos terminal que antes.
+        window.setContentSize(NSSize(width: 1000, height: 640 + barHeight))
         split.splitView.setPosition(240, ofDividerAt: 0)
         window.center()
         window.makeKeyAndOrderFront(nil)

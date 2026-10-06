@@ -50,7 +50,7 @@ struct TabItem: View {
     }
 }
 
-/// Barra de tabs sobre la surface, con `+` al final.
+/// Los tabs dentro del app bar. El `+` va al final de la lista.
 struct TabBarView: View {
     @ObservedObject var model: WorkspaceModel
     @State private var showingMenu = false
@@ -82,11 +82,7 @@ struct TabBarView: View {
                     }
                 }
             }
-
-            // Zona reservada a la derecha para los iconos del panel que se van
-            // a desarrollar. Vacía a propósito: no se inventa nada aquí.
-            Spacer(minLength: 0)
         }
-        .frame(height: 28)
+        .frame(height: AppBarView.height)
     }
 }
