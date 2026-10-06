@@ -8,11 +8,11 @@ protocol AgentAdapter {
     /// Hilos que el CLI conoce para esa carpeta. Vacío si no hay lista.
     func list(cwd: String) async -> [SessionRef]
 
-    /// Sesión nueva. Speell propone el id y el CLI lo respeta, así que la tab
-    /// nace en calidad `exact` sin adivinar nada (ver docs/decisions/0003).
-    func launch(cwd: String, sessionId: String) -> Command
+    /// Conversación nueva, sin id: el id lo genera y guarda el propio CLI
+    /// (docs/decisions/0005). Speell no propone ids.
+    func launch(cwd: String) -> Command
 
-    /// Retoma ese hilo concreto.
+    /// Retoma ese hilo concreto, con un id que salió de `list`.
     func resume(cwd: String, id: String) -> Command
 
     /// Retoma el último hilo de esa carpeta.

@@ -22,6 +22,13 @@ final class SessionStore {
         save()
     }
 
+    /// Reemplaza una tab guardada. Único punto de mutación de un puntero ya creado.
+    func update(_ tab: Tab) {
+        guard let index = tabs.firstIndex(where: { $0.id == tab.id }) else { return }
+        tabs[index] = tab
+        save()
+    }
+
     func remove(id: UUID) {
         tabs.removeAll { $0.id == id }
         save()

@@ -27,6 +27,8 @@ Prueba manual con una sesión real, más un test del adaptador con un binario fa
 
 Mismo interfaz. OpenCode 2 usa su directorio propio (`~/.local/share/opencode2`), no el de `opencode`. Agy puede quedar con lista vacía y solo `-c` / `--conversation` si no hay listado estable. Eso se documenta en el adaptador, no se parchea leyendo archivos no documentados.
 
+> Corrección 2026-10-06 (docs/decisions/0004): el binario `opencode2` es opencode v2.0.22 y escribe en `~/.local/share/opencode`, no en `opencode2`; la regla del store propio está en revisión con el propietario. El adaptador no toca el store: solo llama al CLI.
+
 No se abre un cuarto agente.
 
 ## Fase 4 — Avisos

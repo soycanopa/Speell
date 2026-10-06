@@ -88,17 +88,18 @@ final class GrokAdapterTests: XCTestCase {
 
     // MARK: Comandos
 
-    func testLaunchPinsTheSessionId() {
-        let command = GrokAdapter().launch(cwd: "/tmp/p", sessionId: "019f5191-4164-7f10-ad66-16c5acca2f0a")
+    func testLaunchStartsABareConversation() {
+        // El id lo genera grok; Speell no propone nada (docs/decisions/0005).
+        let command = GrokAdapter().launch(cwd: "/tmp/p")
         XCTAssertEqual(command.executable, "grok")
-        XCTAssertEqual(command.arguments, ["--session-id", "019f5191-4164-7f10-ad66-16c5acca2f0a"])
+        XCTAssertEqual(command.arguments, [])
         XCTAssertEqual(command.cwd, "/tmp/p")
-        XCTAssertEqual(command.shellLine, "grok --session-id 019f5191-4164-7f10-ad66-16c5acca2f0a")
+        XCTAssertEqual(command.shellLine, "grok")
     }
 
     func testResumeAndContinueUseTheVerifiedFlags() {
         let adapter = GrokAdapter()
-        XCTAssertEqual(adapter.resume(cwd: "/tmp/p", id: "abc").arguments, ["--resume", "abc"])
+        XCTAssertEqual(adapter.resume(cwd: "/tmp/p", id: "019f5191-4164-7f10-ad66-16c5acca2f0a").arguments, ["--resume", "019f5191-4164-7f10-ad66-16c5acca2f0a"])
         XCTAssertEqual(adapter.continueLatest(cwd: "/tmp/p").arguments, ["-c"])
         XCTAssertEqual(adapter.kind, .grok)
         XCTAssertEqual(adapter.kind.displayName, "Grok")

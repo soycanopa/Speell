@@ -24,10 +24,6 @@ struct TabMenuView: View {
                             model.onNewAgentTab(agent, .fresh)
                             dismiss()
                         },
-                        onLatest: {
-                            model.onNewAgentTab(agent, .latest)
-                            dismiss()
-                        },
                         onChoose: {
                             dismiss()
                             model.onPickAgentSession(agent)
@@ -40,11 +36,10 @@ struct TabMenuView: View {
     }
 }
 
-/// Fila de agente: icono y nombre, con las tres acciones al lado.
+/// Fila de agente: icono y nombre, con las acciones al lado.
 private struct AgentRow: View {
     let agent: AgentKind
     let onNew: () -> Void
-    let onLatest: () -> Void
     let onChoose: () -> Void
 
     var body: some View {
@@ -56,7 +51,6 @@ private struct AgentRow: View {
                 .lineLimit(1)
             Spacer(minLength: 10)
             IconButton(systemImage: "plus.circle", help: "Sesión nueva", action: onNew)
-            IconButton(systemImage: "clock.arrow.circlepath", help: "Última sesión de esta carpeta", action: onLatest)
             IconButton(systemImage: "list.bullet", help: "Elegir sesión…", action: onChoose)
         }
         .padding(.horizontal, 10)

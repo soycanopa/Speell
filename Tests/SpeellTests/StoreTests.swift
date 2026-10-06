@@ -130,4 +130,28 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(sessions.tabs(of: projectId).map(\.id), [second.id])
         XCTAssertEqual(SessionStore(store: store).tabs.map(\.id), [second.id])
     }
+
+    /// Al restaurar, una tab de agente nueva sin puntero pasa a "último de la
+    /// carpeta" (FLOW F3): el cambio del puntero persiste.
+    func testUpdateRewritesThePointerOfAnExistingTab() {
+        let sessions = SessionStore(store: store)
+        let tab = Tab(projectId: UUID(), kind: .agent, cwd: "/tmp/a", title: "agy", agent: .agy)
+        sessions.add(tab)
+
+        var restored = tab
+        restored.resumeQuality = .latestInDir
+        sessions.update(restored)
+
+        XCTAssertEqual(sessions.tabs.first?.resumeQuality, .latestInDir)
+        XCTAssertEqual(SessionStore(store: store).tabs.first?.resumeQuality, .latestInDir)
+    }
+
+    func testUpdateIgnoresAnUnknownTab() {
+        let sessions = SessionStore(store: store)
+        let ghost = Tab(projectId: UUID(), kind: .shell, cwd: "/tmp/a", title: "a")
+
+        sessions.update(ghost)
+
+        XCTAssertTrue(sessions.tabs.isEmpty)
+    }
 }

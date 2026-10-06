@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Una tab: título y botón de cerrar al hover o si está activa.
+/// Una tab: título y botón de cerrar siempre visible.
 /// El punto de estado llega con los avisos (fase 4).
 struct TabItem: View {
     let tab: Tab
@@ -8,29 +8,19 @@ struct TabItem: View {
     var onSelect: () -> Void
     var onClose: () -> Void
 
-    @State private var hovering = false
-
     var body: some View {
         HStack(spacing: 6) {
             Text(tab.title)
                 .font(.system(size: 13))
                 .lineLimit(1)
 
-            if tab.kind == .agent {
-                Text(qualityLabel)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
             }
-
-            if active || hovering {
-                Button(action: onClose) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 9, weight: .bold))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .help("Cerrar tab")
-            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .help("Cerrar tab")
         }
         .padding(.horizontal, 10)
         // Cuatro puntos menos que el app bar: dos de aire arriba. Abajo no hay
@@ -50,16 +40,6 @@ struct TabItem: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
-        .onHover { hovering = $0 }
-    }
-
-    /// La tab dice con qué calidad se retoma el hilo (UX, Lanzar y retomar).
-    private var qualityLabel: String {
-        switch tab.resumeQuality {
-        case .exact: return "exacta"
-        case .latestInDir: return "última"
-        case .fresh: return "nueva"
-        }
     }
 }
 
