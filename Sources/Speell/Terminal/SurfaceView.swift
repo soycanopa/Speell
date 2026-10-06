@@ -94,10 +94,10 @@ final class SurfaceView: NSView, NSTextInputClient {
 
         // Sin reenviar el cambio de oclusión de la ventana, el renderer queda
         // pausado para siempre: si otra ventana tapa a Speell, `occlusionState`
-        // pierde `.visible` y cualquier `updateOcclusion` manda
-        // `set_occlusion(true)`; al destapar, esta notificación es lo que
-        // actualiza el estado. El pin solo procesa cambios de visibilidad
-        // (`occlusionCallback` hace early-return si el valor no cambia).
+        // pierde `.visible` y el estado que mandamos entonces se queda pegado
+        // (el pin solo procesa cambios: `occlusionCallback` hace early-return
+        // si el valor no cambia). Esta notificación de AppKit es lo que
+        // actualiza el estado al destapar, minimizar o volver de otro Space.
         if let observer = occlusionObserver {
             NotificationCenter.default.removeObserver(observer)
             occlusionObserver = nil
@@ -126,8 +126,14 @@ final class SurfaceView: NSView, NSTextInputClient {
     /// es la única visible del pane.
     func updateOcclusion() {
         guard let surface else { return }
-        let hidden = isHidden || window == nil || !(window?.occlusionState.contains(.visible) ?? false)
-        ghostty_surface_set_occlusion(surface, hidden)
+        let windowVisible = window?.occlusionState.contains(.visible) ?? false
+        let hidden = isHidden || window == nil || !windowVisible
+        // El parámetro del C API es `visible`, no `hidden` (ghostty.h:
+        // `ghostty_surface_set_occlusion(ghostty_surface_t, bool visible)`).
+        // Pasar `hidden` directo los invertía: mostrar una tab mandaba
+        // "invisible" y el renderer se dormía sin volver a despertar (solo
+        // reacciona a cambios), dejando la tab congelada en el fondo vacío.
+        ghostty_surface_set_occlusion(surface, !hidden)
     }
 
     override func setFrameSize(_ newSize: NSSize) {
@@ -356,7 +362,7 @@ final class SurfaceView: NSView, NSTextInputClient {
 
     func markedRange() -> NSRange {
         markedText.length > 0
-            ? NSRange(location: 0, length: markedText.length)
+            ? NSRange(location: 0, length: 0)
             : NSRange(location: NSNotFound, length: 0)
     }
 
