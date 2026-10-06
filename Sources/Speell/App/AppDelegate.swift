@@ -7,7 +7,10 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
-    private var split: NSSplitViewController?
+    private var split: WorkspaceSplitViewController?
+
+    /// Ancho de la sidebar recordado entre sesiones.
+    private static let sidebarWidthKey = "sidebarWidth"
     private var host: GhosttyHost?
     private var controller: WorkspaceController?
     private var cancellables: Set<AnyCancellable> = []
@@ -128,15 +131,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // siguiente ciclo del runloop.
         DispatchQueue.main.async {
             NSApp.activate(ignoringOtherApps: true)
+            // El ancho recordado de la sidebar se restaura aquí, ya maquetada
+            // la ventana: antes del primer layout, autolayout del split view
+            // pisaba la posición (medido: se guardaba 300 y volvía en 185).
+            let remembered = UserDefaults.standard.double(forKey: Self.sidebarWidthKey)
+            if (180.0...320.0).contains(remembered) {
+                window.layoutIfNeeded()
+                split.splitView.setPosition(remembered, ofDividerAt: 0)
+            }
         }
         self.window = window
         self.split = split
         // El split no admite delegate externo, así que el ancho se publica desde
         // una subclase suya que ya está enganchada.
         split.sidebarItem = sidebar
-        split.onSidebarWidthChanged = { [weak self] width in
+        split.onSidebarWidthChanged = { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.controller?.model.contentLeadingOffset = width
+                // Cada arrastre del divisor deja el ancho de la sidebar
+                // recordado para la próxima sesión.
+                if let width = self?.split?.sidebarItem?.viewController.view.frame.width {
+                    UserDefaults.standard.set(width, forKey: Self.sidebarWidthKey)
+                }
+                self?.controller?.model.contentLeadingOffset =
+                    self?.split?.contentLeadingOffset ?? 241
             }
         }
         controller.model.contentLeadingOffset = split.contentLeadingOffset ?? 241

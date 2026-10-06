@@ -31,7 +31,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 
 ## Sidebar
 
-- Ancho inicial 240 pt. Redimensionable, mínimo 180, máximo 320.
+- Ancho inicial 240 pt. Redimensionable, mínimo 180, máximo 320. El ancho se recuerda entre sesiones (`sidebarWidth` en UserDefaults): cada arrastre del divisor lo deja guardado y el arranque siguiente lo restaura.
 - Fondo: el mismo `#282828` de la ventana (`SpeellPalette.windowBackgroundColor`), con las esquinas de `SpeellPalette.corner`. Como el tono es idéntico, la esquina solo se lee donde el contenido la alcanza (una fila seleccionada); si algún día se quiere el borde visible, se le da un tinte propio y las esquinas ya están.
 - Blur de la sidebar: **pendiente, fuera de v1.** Con la ventana opaca un material no tiene nada que difuminar, así que no se aplica. Si vuelve, necesita que la ventana deje ver el escritorio, y entonces el resto del chrome tiene que pintar su propio fondo.
 - Fila de proyecto: nombre (el folder name, no el path completo), path en secundario truncado al medio, badge si alguna tab pide permiso o terminó.
