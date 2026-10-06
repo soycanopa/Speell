@@ -1,105 +1,180 @@
-# Functional Source License, Version 1.1, ALv2 Future License
+SPEELL Source-Available License
+Copyright (c) 2026 Carlos Andres O. P.
 
-## Abbreviation
+All rights reserved.
 
-FSL-1.1-ALv2
+This source code is published for transparency, auditability, and personal
+reading. It is NOT open-source software as defined by the Open Source
+Initiative (https://opensource.org/osd). No rights are granted under this
+document except those narrowly enumerated below.
 
-## Notice
+1. PERMITTED USES
 
-Copyright 2026 Carlos Andres O. P.
+   Subject to full and ongoing compliance with every term of this license,
+   and only so long as you do not engage in any Prohibited Use (Section 2),
+   the following are permitted without additional permission:
 
-## Terms and Conditions
+   (a) Viewing and reading the source code in this repository.
 
-### Licensor ("We")
+   (b) Downloading and installing official pre-built binary releases of
+       Speell published by the copyright holder and running them on hardware
+       you own, lease, or otherwise control — including:
+           (i) personal use;
+          (ii) use inside any organization (including for-profit
+               companies), by employees or contractors, on that
+               organization's devices or on personal devices used for
+               that organization's work;
+         (iii) use of Speell as a tool to design, build, test, debug,
+               deploy, operate, or support other software, services, or
+               content — including commercial, revenue-generating, or
+               client-facing work. Nothing produced inside Speell (code,
+               documents, command output, transcripts, etc.) is subject
+               to this license; you own whatever you create with it.
 
-The party offering the Software under these Terms and Conditions.
+   (c) Compiling the source code locally, on a machine you own or
+       control, solely for your own or your organization's internal use
+       as described in (b), provided the resulting binary is not
+       redistributed, published, hosted as a service, bundled into any
+       product, or otherwise made accessible to anyone outside your
+       organization.
 
-### The Software
+   (d) Creating a personal fork of this repository on a public
+       code-hosting platform (e.g., GitHub), preparing modifications to
+       the source code on that fork, and proposing those modifications
+       back to the copyright holder via pull request or equivalent
+       contribution channel. Contributions so submitted are governed by
+       Section 9 (Contributions). A fork made under this subsection:
+           (i) must not be promoted, marketed, or distributed as an
+               alternative, replacement, or competing version of Speell;
+          (ii) must not be used to publish or distribute compiled
+               binaries to anyone other than the fork owner;
+         (iii) must retain a clear reference to this upstream
+               repository and its LICENSE file, unmodified;
+          (iv) must not be renamed or rebranded in a way that would
+               confuse users about its relationship to Speell.
+       A fork kept up for ongoing contribution is fine; a fork kept up
+       as a parallel distribution is not.
 
-The "Software" is each version of the software that we make available under
-these Terms and Conditions, as indicated by our inclusion of these Terms and
-Conditions with the Software.
+   In short: using Speell as a terminal to do your work — personal or
+   commercial — is fine. Forking to contribute back is fine. What is not
+   fine is redistributing, repackaging, reselling, or maintaining a
+   competing distribution of Speell itself. See Section 2.
 
-### License Grant
+2. PROHIBITED USES
 
-Subject to your compliance with this License Grant and the Patents,
-Redistribution and Trademark clauses below, we hereby grant you the right to
-use, copy, modify, create derivative works, publicly perform, publicly display
-and redistribute the Software for any Permitted Purpose identified below.
+   Except with the prior, specific, written permission of the copyright
+   holder, you MAY NOT:
 
-### Permitted Purpose
+   (a) Copy, reproduce, mirror, or republish the source code, in whole or
+       in part, in any form or medium, whether verbatim or modified,
+       except as expressly permitted by Section 1(d) (forks for
+       contribution).
 
-A Permitted Purpose is any purpose other than a Competing Use. A Competing Use
-means making the Software available to others in a commercial product or
-service that:
+   (b) Maintain any fork, mirror, or derivative repository for purposes
+       other than proposing contributions back to the upstream project
+       — including, without limitation, maintaining a long-running
+       divergent fork, a competing distribution, a rebrand, or a
+       hard-fork project.
 
-1. substitutes for the Software;
+   (c) Create, prepare, distribute, sublicense, or publish any derivative
+       work, adaptation, port, translation, or modification of the source
+       code or binaries to any third party, whether free of charge or
+       for a fee. (Preparing modifications on a personal contribution
+       fork for the purpose of submitting a pull request is permitted
+       under Section 1(d) and is not considered distribution.)
 
-2. substitutes for any other product or service we offer using the Software
-   that exists as of the date we make the Software available; or
+   (d) Redistribute Speell itself (source or binary) to third parties in
+       any form — including, without limitation:
+           (i) reselling, sublicensing, renting, leasing, or lending
+               Speell;
+          (ii) bundling Speell into a product, service, device, or
+               distribution that you ship, sell, license, or otherwise
+               make available to third parties;
+         (iii) hosting Speell (or any service whose primary value derives
+               from Speell) as a Software-as-a-Service or other managed
+               offering available to users outside your organization;
+          (iv) publishing compiled builds of Speell on any third-party
+               distribution channel (app store, package manager,
+               website, mirror, etc.) other than the copyright holder's
+               own official channels.
+       This clause is the reason this license exists: Speell is free to
+       *use* commercially, but not free to *redistribute* or *productize*.
 
-3. offers the same or substantially similar functionality as the Software.
+   (e) Remove, alter, or obscure any copyright, trademark, author,
+       attribution, or proprietary notice contained in the source code
+       or binaries.
 
-Permitted Purposes specifically include using the Software:
+   (f) Use the name "Speell", the Speell logo, or any confusingly similar
+       name or mark to identify, promote, or market any product,
+       service, fork, or derivative work.
 
-1. for your internal use and access;
+   (g) Train, fine-tune, evaluate, benchmark, or condition any
+       machine-learning model, dataset, or AI system on the source code
+       (in whole or in part), or publish any dataset derived from the
+       source code for such purposes, without prior written permission.
 
-2. for non-commercial education;
+3. NO TRANSFER OF OWNERSHIP
 
-3. for non-commercial research; and
+   All right, title, and interest in and to the source code and binaries,
+   including all intellectual property rights, remain exclusively with
+   the copyright holder. Nothing in this license transfers or assigns
+   any ownership interest to you.
 
-4. in connection with professional services that you provide to a licensee
-   using the Software in accordance with these Terms and Conditions.
+4. THIRD-PARTY COMPONENTS
 
-### Patents
+   This project depends on third-party libraries (including, without
+   limitation, ghostty), each of which is distributed under its own
+   respective license. Those components remain governed by their
+   original licenses, which are not superseded by this document.
 
-To the extent your use for a Permitted Purpose would necessarily infringe our
-patents, the license grant above includes a license under our patents. If you
-make a claim against any party that the Software infringes or contributes to
-the infringement of any patent, then your patent license to the Software ends
-immediately.
+5. TERMINATION
 
-### Redistribution
+   Any breach of Section 1 or Section 2 automatically and immediately
+   terminates all rights granted to you under this license, without
+   notice. Upon termination you must cease all use of the source code
+   and binaries, delete all local copies, and destroy any materials
+   derived from them.
 
-The Terms and Conditions apply to all copies, modifications and derivatives of
-the Software.
+6. NO WARRANTY
 
-If you redistribute any copies, modifications or derivatives of the Software,
-you must include a copy of or a link to these Terms and Conditions and not
-remove any copyright notices provided in or with the Software.
+   THE SOURCE CODE AND BINARIES ARE PROVIDED "AS IS", WITHOUT WARRANTY
+   OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+   TITLE, AND NON-INFRINGEMENT.
 
-### Disclaimer
+7. LIMITATION OF LIABILITY
 
-THE SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING WITHOUT LIMITATION WARRANTIES OF FITNESS FOR A PARTICULAR
-PURPOSE, MERCHANTABILITY, TITLE OR NON-INFRINGEMENT.
+   IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+   DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT,
+   OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOURCE
+   CODE OR BINARIES OR THE USE OR OTHER DEALINGS IN THEM.
 
-IN NO EVENT WILL WE HAVE ANY LIABILITY TO YOU ARISING OUT OF OR RELATED TO THE
-SOFTWARE, INCLUDING INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
-EVEN IF WE HAVE BEEN INFORMED OF THEIR POSSIBILITY IN ADVANCE.
+8. GOVERNING LAW
 
-### Trademarks
+   This license is governed by the laws of the jurisdiction of the
+   copyright holder's primary residence, without regard to its conflict
+   of law provisions.
 
-Except for displaying the License Details and identifying us as the origin of
-the Software, you have no right under these Terms and Conditions to use our
-trademarks, trade names, service marks or product names.
+9. CONTRIBUTIONS
 
-## Grant of Future License
+   By submitting any contribution (pull request, patch, issue comment
+   containing code, or equivalent) to this project, you:
 
-We hereby irrevocably grant you an additional license to use the Software under
-the Apache License, Version 2.0 that is effective on the second anniversary of
-the date we make the Software available. On or after that date, you may use the
-Software under the Apache License, Version 2.0, in which case the following
-will apply:
+   (a) Represent that the contribution is your original work, or that
+       you otherwise have the right to submit it under the terms of
+       this license;
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License.
+   (b) Irrevocably grant the copyright holder a perpetual, worldwide,
+       royalty-free, non-exclusive license to use, reproduce, modify,
+       relicense, sublicense, and distribute your contribution as part
+       of Speell under this license or any future license the copyright
+       holder chooses to adopt for Speell;
 
-You may obtain a copy of the License at
+   (c) Understand that your contribution, once merged, is subject to
+       the same terms as the rest of Speell — in particular, you do not
+       retain the right to redistribute a version of Speell containing
+       your contribution outside the terms of this license.
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied. See the License for the
-specific language governing permissions and limitations under the License.
+For inquiries about redistribution, bundling, hosting as a service,
+maintaining a non-contribution fork, or any other use not permitted
+above, contact the copyright holder.

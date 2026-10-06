@@ -79,8 +79,8 @@ El pin (commit de Ghostty + versión de zig, con el `shasum` del tarball de zig 
 
 ## Licencia
 
-Source-available bajo [Functional Source License 1.1, ALv2 Future License](LICENSE) (`FSL-1.1-ALv2`).
+Source-available bajo la [Speell Source-Available License](LICENSE).
 
-Puedes usar, copiar, modificar y redistribuir Speell para cualquier propósito excepto **Competing Use**: ofrecerlo a otros como producto o servicio comercial que sustituya a Speell o dé la misma funcionalidad. Uso interno, educación e investigación no comercial quedan permitidos. Cada versión pasa a **Apache 2.0** a los dos años de publicarse.
+Puedes ver el código, usar los binarios oficiales (personal o comercial, lo que construyas con Speell es tuyo) y compilarlo localmente para uso interno. Fork sí, pero solo para contribuir vía PR: nada de redistribuir, revender, empaquetar en otro producto, hostear como servicio, publicar builds en canales de terceros ni mantener un fork paralelo o rebrand. No es una licencia Open Source ni OSI-approved y no caduca hacia una licencia abierta.
 
-No es una licencia Open Source ni OSI-approved. libghostty y demás dependencias conservan su licencia propia (Ghostty es MIT); Speell solo enlaza la librería.
+libghostty y demás dependencias conservan su licencia propia (Ghostty es MIT); Speell solo enlaza la librería.
