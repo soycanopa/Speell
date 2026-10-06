@@ -26,16 +26,20 @@ struct SidebarView: View {
             // no llega a verse.
             .scrollContentBackground(.hidden)
 
-            Divider()
-
+            // Solo el icono, sin línea encima: el `Divider` se leía como un
+            // borde del botón y el texto sobraba junto al `+` de la tab bar.
+            // El label estira a todo el ancho para que el click no exija dar
+            // en el glifo.
             Button {
                 model.onAddProject()
             } label: {
-                Label("Añadir proyecto", systemImage: "plus")
+                Image(systemName: "plus")
+                    .font(.system(size: 13, weight: .medium))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .help("Añadir proyecto")
             .padding(10)
         }
         // La sidebar es la misma superficie que la ventana: un rectángulo del

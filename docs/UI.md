@@ -34,7 +34,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 - Fila de proyecto: nombre (el folder name, no el path completo), path en secundario truncado al medio, badge si alguna tab pide permiso o terminó.
 - Fila activa: selección del sistema (`NSVisualEffect` / selección de lista), no un azul inventado.
 - Sección única, "Proyectos". Sin favoritos ni grupos en v1.
-- Pie: "Añadir proyecto".
+- Pie: botón de solo icono `+`, tooltip "Añadir proyecto". Sin línea encima: el `Divider` se leía como un borde del botón.
 
 ## Tabs
 
