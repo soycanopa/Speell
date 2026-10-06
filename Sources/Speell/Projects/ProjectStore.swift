@@ -26,16 +26,31 @@ final class ProjectStore {
         projects.sorted { $0.lastActiveAt > $1.lastActiveAt }
     }
 
+    /// Lo que la sidebar muestra: los no archivados, por última actividad.
+    var unarchived: [Project] {
+        ordered.filter { !$0.archived }
+    }
+
+    /// Los archivados, para settings → Archivados.
+    var archived: [Project] {
+        ordered.filter { $0.archived }
+    }
+
     func project(id: UUID) -> Project? {
         projects.first { $0.id == id }
     }
 
-    /// Fija una carpeta. Si ya estaba fijada, devuelve la fila existente.
+    /// Fija una carpeta. Si ya estaba fijada, devuelve la fila existente;
+    /// si estaba archivada, volver a fijarla la recupera.
     @discardableResult
     func add(path: String) -> Project {
         let standardized = (path as NSString).standardizingPath
-        if let existing = projects.first(where: { $0.path == standardized }) {
-            return existing
+        if let index = projects.firstIndex(where: { $0.path == standardized }) {
+            if projects[index].archived {
+                projects[index].archived = false
+                save()
+            }
+            return projects[index]
         }
         let project = Project(path: standardized)
         projects.append(project)
@@ -49,6 +64,32 @@ final class ProjectStore {
         if lastActiveProjectId == id {
             lastActiveProjectId = nil
         }
+        save()
+    }
+
+    /// Archiva: sale de la sidebar, queda recuperable. Nada se borra.
+    func archive(id: UUID) {
+        guard let index = projects.firstIndex(where: { $0.id == id }), !projects[index].archived else { return }
+        projects[index].archived = true
+        if lastActiveProjectId == id {
+            lastActiveProjectId = nil
+        }
+        save()
+    }
+
+    /// Recupera un archivado: vuelve a la sidebar.
+    func restore(id: UUID) {
+        guard let index = projects.firstIndex(where: { $0.id == id }), projects[index].archived else { return }
+        projects[index].archived = false
+        save()
+    }
+
+    /// Cambia el nombre visible. El nombre vive solo en Speell: la carpeta
+    /// queda igual.
+    func rename(id: UUID, name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let index = projects.firstIndex(where: { $0.id == id }), !trimmed.isEmpty else { return }
+        projects[index].displayName = trimmed
         save()
     }
 
