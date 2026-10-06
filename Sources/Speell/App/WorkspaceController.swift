@@ -82,18 +82,22 @@ final class WorkspaceController {
         }
     }
 
-    /// Un aviso de una surface: punto en la tab siempre, y notificación
-    /// nativa solo si la ventana no está activa y el tipo está encendido
-    /// (FLOW F4).
+    /// Un aviso de una surface: la decisión vive en `NoticeRouter` (Domain);
+    /// aquí solo se aplica su resultado (FLOW F4).
     private func handleSurfaceNotice(_ surface: ghostty_surface_t, _ notice: AgentNotice) {
         guard let tabId = pane.tabId(forSurface: surface),
               let tab = sessions.tabs.first(where: { $0.id == tabId }) else { return }
 
-        model.noticedTabIds.insert(tabId)
-        let preferences = model.notificationPreferences
-        guard preferences.systemEnabled, preferences.isEnabled(notice.kind) else { return }
-        guard !NSApp.isActive else { return }
+        let route = NoticeRouter.route(
+            notice,
+            isAgentTab: tab.kind == .agent,
+            appActive: NSApp.isActive,
+            preferences: model.notificationPreferences,
+            systemAvailable: noticeCenter.isAvailable)
+        guard route.marksTab else { return }
 
+        model.noticedTabIds.insert(tabId)
+        guard route.postsSystemNotification else { return }
         _ = noticeCenter.post(notice, tabId: tabId, tabTitle: tab.title)
     }
 

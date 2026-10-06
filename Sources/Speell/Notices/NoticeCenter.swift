@@ -40,6 +40,8 @@ final class NoticeCenter: NSObject {
         switch notice {
         case .agentMessage(_, let body):
             content.body = body
+        case .bell:
+            content.body = "El agente terminó una tarea o pide tu atención."
         case .commandFinished(0):
             content.body = "El comando terminó."
         case .commandFinished(let code):
