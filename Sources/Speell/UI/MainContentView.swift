@@ -26,7 +26,7 @@ struct MainContentView: View {
                     EmptyStateView(
                         kind: .noTabs,
                         onOpenFolder: { model.onAddProject() },
-                        onNewTerminal: { model.onNewTab() })
+                        onNewTerminal: { model.onNewTerminal() })
                 }
             }
         }
