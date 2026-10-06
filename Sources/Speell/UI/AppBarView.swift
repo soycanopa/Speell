@@ -41,5 +41,11 @@ struct AppBarView: View {
         // centra, y los tabs terminan pegados al borde derecho.
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: Self.height)
+        // El título de 28 pt que macOS sigue reservando arriba entra al hosting
+        // view como safe area: con la franja en [8, 44], 20 pt caen dentro de la
+        // zona del sistema y SwiftUI los respeta, empujando los tabs contra el
+        // fondo de la franja y por debajo, sobre la terminal. Speell mide su
+        // propio chrome, así que la franja entera es área de contenido.
+        .ignoresSafeArea()
     }
 }
