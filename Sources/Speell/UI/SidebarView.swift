@@ -22,6 +22,9 @@ struct SidebarView: View {
                 }
             }
             .listStyle(.sidebar)
+            // El `List` pinta su propio fondo opaco; sin esto el material de
+            // abajo no llega a verse.
+            .scrollContentBackground(.hidden)
 
             Divider()
 
@@ -35,6 +38,10 @@ struct SidebarView: View {
             .buttonStyle(.plain)
             .padding(10)
         }
+        // El material primero, el oscurecido encima de él: los dos van detrás del
+        // contenido, así que el texto y las filas no se atenúan.
+        .background(SpeellPalette.sidebarMaterial)
+        .background(SpeellPalette.sidebarDim)
         .frame(minWidth: 180, idealWidth: 240, maxWidth: 320)
     }
 

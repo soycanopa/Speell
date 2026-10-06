@@ -38,6 +38,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             defer: false)
         window.title = "Speell"
         window.contentMinSize = NSSize(width: 480, height: 200)
+        // El material de la sidebar solo difumina si hay algo detrás. Con la
+        // ventana opaca, el material se ve como un gris plano.
+        window.isOpaque = false
+        window.backgroundColor = .clear
         window.contentViewController = split
         // Asignar el contentViewController encoge la ventana al tamaño mínimo
         // que reportan las vistas; el tamaño inicial se fija después.
