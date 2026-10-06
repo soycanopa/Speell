@@ -100,7 +100,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // franja. Se compensa para no entregar menos terminal que antes.
         window.setContentSize(NSSize(width: 1000, height: 640 + barHeight))
         split.splitView.setPosition(240, ofDividerAt: 0)
-        centerWindowControls(in: window, barHeight: barHeight)
+        centerWindowControls(in: window, on: appBar)
+        // El centro del app bar cambia con el alto de la ventana, y macOS puede
+        // recolocar los botones al maquetar de nuevo: se vuelven a centrar en
+        // cada resize.
+        window.delegate = self
         // `center()` usa la pantalla principal del proceso, que con varias
         // pantallas puede no ser la que el usuario tiene delante. Se ancla al
         // área visible de `NSScreen.main` para que la ventana aparezca donde se
@@ -188,22 +192,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return controller
     }
 
-    // MARK: Alineación del app bar
+    // MARK: Alineación de los botones de ventana
 
-    /// macOS coloca los botones de ventana en su propia franja de título, que no
-    /// coincide con la franja de Speell. Se centran en la del app bar para que
-    /// queden alineados con los tabs.
-    private func centerWindowControls(in window: NSWindow, barHeight: CGFloat) {
+    /// macOS coloca los botones de ventana en su propia barra de título —una
+    /// vista de 28 pt cuyas coordenadas no controla Speell—. Alinearlos con el
+    /// app bar exige convertir el centro real de la franja al sistema de
+    /// coordenadas de esa vista: centrar contra una constante los dejaba pegados
+    /// al tope, porque la franja del sistema mide 28 y no `AppBarView.height`.
+    private func centerWindowControls(in window: NSWindow, on bar: NSView) {
+        guard let content = window.contentView else { return }
+        let barCenter = CGPoint(x: 0, y: bar.frame.midY)
+
         let buttons = [
             window.standardWindowButton(.closeButton),
             window.standardWindowButton(.miniaturizeButton),
             window.standardWindowButton(.zoomButton),
         ].compactMap { $0 }
 
-        guard let height = buttons.first?.frame.height else { return }
-        let y = ((barHeight - height) / 2).rounded()
         for button in buttons {
-            button.setFrameOrigin(NSPoint(x: button.frame.origin.x, y: y))
+            guard let host = button.superview else { continue }
+            let center = content.convert(barCenter, to: host)
+            button.setFrameOrigin(
+                CGPoint(x: button.frame.origin.x, y: center.y - button.frame.height / 2))
         }
+    }
+}
+
+extension AppDelegate: NSWindowDelegate {
+    func windowDidResize(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              let bar = window.contentView?.subviews.last else { return }
+        centerWindowControls(in: window, on: bar)
     }
 }
