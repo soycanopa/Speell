@@ -15,12 +15,12 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 - **Sin barra de título.** La ventana usa `titlebarAppearsTransparent`, `titleVisibility = .hidden` y `fullSizeContentView`, que va en el `styleMask` de creación: insertado después no recalcula el layout.
 - macOS sigue reservando la franja de la barra de título aunque el content view la ocupe, y el `NSSplitViewController` maqueta sus columnas contra el área reservada. Por eso la franja la ocupa **Speell**, no el sistema: un `AppBarView` de ancho completo apilado encima del contenido, dentro de un contenedor.
 - **Una sola superficie de fondo para toda la ventana: `#282828`.** App bar, sidebar, margen exterior y separación entre la sidebar y la terminal son el mismo color. Antes era `#181818` y la sidebar pintaba aparte `underPageBackgroundColor` más una capa negra, más oscura y despegada del chrome; ahora todo es un tono, el de `underPageBackgroundColor` en oscuro, con el que macOS enmarca contenido `#1E1E1E`. Vive en `SpeellPalette.windowBackground` como `NSColor`, porque lo pinta la ventana.
-- **App bar: 28 pt de alto, de ancho completo.** A la izquierda, el hueco que ocupa la sidebar más el divider, para que los tabs arranquen exactamente en el borde de la terminal. Los botones de ventana, que macOS sigue dibujando sobre la sidebar, caen dentro de ese hueco: no se les reserva ancho aparte. Luego los tabs. Luego, a la derecha, la zona reservada y **vacía a propósito** para los iconos del panel que se va a desarrollar; no se inventan iconos ahí.
+- **App bar: 36 pt de alto, de ancho completo.** A la izquierda, el hueco que ocupa la sidebar más el divider, para que los tabs arranquen exactamente en el borde de la terminal. Los botones de ventana, que macOS sigue dibujando sobre la sidebar, caen dentro de ese hueco: no se les reserva ancho aparte. Luego los tabs. Luego, a la derecha, la zona reservada y **vacía a propósito** para los iconos del panel que se va a desarrollar; no se inventan iconos ahí.
 - El hueco del app bar lo publica el composition root como `WorkspaceModel.contentLeadingOffset`, que es el borde derecho de la sidebar —su `frame.maxX`, ya con el divider— y no su ancho. Leer el ancho y además sumar el ancho de los botones de ventana empujaba los tabs 77 px hacia dentro de la terminal.
 - La sidebar se identifica **por referencia** (`WorkspaceSplitViewController.sidebarItem`), nunca por índice: `splitView.subviews.first` devuelve la terminal, no la sidebar, y esa confusion ponía los tabs 831 px a la derecha.
 - El item del split es **plano** (`NSSplitViewItem(viewController:)`), no `sidebarWithViewController`: el behavior de sidebar instala detrás de toda la columna el material vibrante de macOS, que pintaba los 8 pt de separación con un tono distinto al de la ventana y tapaba las esquinas redondeadas del clip. Speell pinta sus propias superficies; detrás de la sidebar no tiene que haber nada del sistema. La sidebar fija su ancho al redimensionar (`holdingPriority` 260, lo que hacía el behavior de sidebar) y la terminal cede.
 - Los tabs y el app bar **no llevan línea debajo**: la terminal llega hasta arriba.
-- El alto inicial se compensa con los 38 del app bar (`setContentSize(640 + 38)`) para no entregar menos terminal que antes.
+- El alto inicial se compensa con el alto del app bar (`setContentSize(640 + 36)`) para no entregar menos terminal que antes.
 - Colapsar la sidebar: **pendiente.** Antes se usaba el botón de toolbar de macOS y ya no hay toolbar. El arrastre del divider y el `canCollapse` del split siguen funcionando; falta el control que lo dispare.
 - Tamaño mínimo pensado para una surface de 80×24 más una sidebar de 220 pt. No se bloquea por debajo si el sistema lo permite; la sidebar colapsa primero.
 
@@ -36,7 +36,7 @@ Carlos diseña. Esta spec no sustituye un archivo de diseño: fija lo que no se 
 
 ## Tabs
 
-- Barra sobre la surface, altura de control de macOS (~28 pt).
+- Barra sobre la surface: es el app bar entero (36 pt), no una barra aparte.
 - Tab: punto de estado, título, botón cerrar al hover o si está activa.
 - Punto de estado:
   - idle: ninguno

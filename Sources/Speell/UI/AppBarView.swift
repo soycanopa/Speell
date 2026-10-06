@@ -10,7 +10,11 @@ import SwiftUI
 /// iconos del panel que se va a desarrollar.
 struct AppBarView: View {
     /// Alto de la franja.
-    static let height: CGFloat = 28
+    ///
+    /// 36: con 28 la tab quedaba en 24 y se leía apretada para texto de 13.
+    /// La tab activa mide esto menos 4, y la ventana compensa el alto con este
+    /// valor en `AppDelegate`.
+    static let height: CGFloat = 36
 
     @ObservedObject var model: WorkspaceModel
 
