@@ -49,6 +49,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentMinSize = NSSize(width: 480, height: 200)
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
+        // Un solo fondo para toda la ventana. Antes era el gris del sistema, y
+        // los huecos de 8 px —el margen exterior y la separación entre la
+        // sidebar y la terminal— se leían como un canal claro en medio de dos
+        // superficies oscuras.
+        window.backgroundColor = SpeellPalette.windowBackground
 
         // El app bar y el split no son `contentViewController`: hace falta un
         // contenedor para apilar el bar encima del contenido y que ambos ocupen
